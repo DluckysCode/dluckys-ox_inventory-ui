@@ -810,8 +810,8 @@ input {
   top: 50%;
   right: 3vw;
   transform: translateY(-50%);
-  width: 52vh;
-  max-height: 86vh;
+  width: 62vh;
+  max-height: 90vh;
   overflow-y: auto;
   display: flex;
   flex-direction: column;
@@ -821,13 +821,165 @@ input {
   color: $text;
 
   .rust-list {
-    max-height: 26vh;
+    max-height: 22vh;
   }
-  .rust-row button.alt {
-    background: $slot;
+  .rust-list-tall {
+    max-height: 60vh;
   }
-  .rust-row button.danger {
-    background: $red;
+  button.alt {
+    background: $slot !important;
+  }
+  button.danger {
+    background: $red !important;
+  }
+  input,
+  select {
+    border: none;
+    outline: none;
+    padding: 0.7vh 0.9vh;
+    background: rgba(0, 0, 0, 0.35);
+    color: $text;
+    font-size: 1.35vh;
+    min-width: 0;
+  }
+  option {
+    background: #22221e;
+  }
+}
+.rust-admin-tabs {
+  width: 100%;
+}
+.rust-admin-wide,
+.rust-admin-form button,
+.rust-link {
+  border: none;
+  padding: 0.9vh;
+  background: $slot;
+  color: $text;
+  font-size: 1.35vh;
+  font-weight: 700;
+  text-transform: uppercase;
+  cursor: pointer;
+  &:active {
+    transform: none;
+  }
+  &:disabled {
+    opacity: 0.5;
+    cursor: default;
+  }
+}
+.rust-admin-wide.on,
+.rust-admin-form button {
+  background: $green;
+  color: #fff;
+}
+.rust-link {
+  padding: 0.3vh 0.8vh;
+  font-size: 1.15vh;
+}
+.rust-admin-form {
+  display: flex;
+  gap: $gap;
+  align-items: stretch;
+
+  > input,
+  > select {
+    flex: 1;
+  }
+  input[type="number"] {
+    flex: 0 0 7vh;
+  }
+  label {
+    display: flex;
+    align-items: center;
+    gap: 0.5vh;
+    font-size: 1.15vh;
+    color: $muted;
+    text-transform: uppercase;
+    input {
+      width: 6vh;
+    }
+  }
+}
+.rust-admin-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.8vh;
+
+  label {
+    display: flex;
+    flex-direction: column;
+    gap: 0.3vh;
+    font-size: 1.15vh;
+    color: $muted;
+    text-transform: uppercase;
+  }
+  label.check {
+    flex-direction: row;
+    align-items: center;
+    color: $text;
+  }
+}
+.rust-admin-msg {
+  padding: 0.7vh 1vh;
+  font-size: 1.35vh;
+  font-weight: 700;
+  &.ok {
+    background: rgba(111, 143, 58, 0.5);
+  }
+  &.bad {
+    background: rgba(192, 71, 47, 0.5);
+  }
+}
+.rust-players {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  max-height: 16vh !important;
+}
+.rust-player-pick {
+  padding: 0.7vh 1vh;
+  background: $panel;
+  font-size: 1.35vh;
+  cursor: pointer;
+  b {
+    color: $muted;
+    margin-right: 0.6vh;
+  }
+  &.sel {
+    background: $accent;
+    b {
+      color: #fff;
+    }
+  }
+}
+.rust-log {
+  display: grid;
+  grid-template-columns: 4.5vh 8vh 14vh 1fr;
+  gap: 0.6vh;
+  padding: 0.5vh 0.8vh;
+  background: $panel;
+  font-size: 1.25vh;
+  align-items: center;
+
+  .time {
+    color: $muted;
+  }
+  .kind {
+    font-weight: 700;
+    text-transform: uppercase;
+    font-size: 1.05vh;
+  }
+  .k-admin {
+    color: #e8a594;
+  }
+  .k-loot,
+  .k-recycle {
+    color: $greenHi;
+  }
+  .who {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
   }
 }
 .rust-admin-head {
