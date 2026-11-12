@@ -15,6 +15,7 @@ import PlayerInventory from '../rust/PlayerInventory';
 import RustClothing from '../rust/RustClothing';
 import RustCrafting from '../rust/RustCrafting';
 import CraftSoundPlayer from '../rust/CraftSoundPlayer';
+import AdminPanel from '../rust/AdminPanel';
 
 const Inventory: React.FC = () => {
   const [inventoryVisible, setInventoryVisible] = useState(false);
@@ -86,6 +87,7 @@ const Inventory: React.FC = () => {
         </div>
       </Fade>
       <CraftSoundPlayer />
+      <AdminPanel />
     </>
   );
 };

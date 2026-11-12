@@ -772,3 +772,81 @@ input {
     background-color: $slotHi !important;
   }
 }
+
+// ---------- Panel admin (/inventory) ----------
+.rust-admin {
+  position: fixed;
+  top: 50%;
+  right: 3vw;
+  transform: translateY(-50%);
+  width: 52vh;
+  max-height: 86vh;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 0.8vh;
+  padding: 1.2vh;
+  background: $bg;
+  color: $text;
+
+  .rust-list {
+    max-height: 26vh;
+  }
+  .rust-row button.alt {
+    background: $slot;
+  }
+  .rust-row button.danger {
+    background: $red;
+  }
+}
+.rust-admin-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 2.4vh;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+
+  button {
+    border: none;
+    background: $slot;
+    color: $text;
+    width: 3.6vh;
+    height: 3.6vh;
+    font-size: 1.6vh;
+    cursor: pointer;
+    &:active {
+      transform: none;
+    }
+  }
+}
+.rust-admin-add {
+  display: flex;
+  flex-wrap: wrap;
+  gap: $gap;
+
+  button {
+    border: none;
+    padding: 0.8vh 1.1vh;
+    background: $green;
+    color: #fff;
+    font-size: 1.25vh;
+    font-weight: 700;
+    text-transform: uppercase;
+    cursor: pointer;
+    &:hover {
+      background: $greenHi;
+    }
+    &:active {
+      transform: none;
+    }
+  }
+}
+.rust-admin-help {
+  font-size: 1.2vh;
+  color: $muted;
+  b {
+    color: $text;
+  }
+}
