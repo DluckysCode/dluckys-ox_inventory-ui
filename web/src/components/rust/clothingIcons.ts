@@ -7,7 +7,6 @@ const paths: Record<string, string> = {
   vest: '<path d="M22 10v8l-8 6v30h36V24l-8-6v-8"/><path d="M22 10c2 8 18 8 20 0"/><path d="M20 34h24M20 44h24"/>',
   accessory: '<path d="M16 18c4 14 28 14 32 0"/><circle cx="32" cy="38" r="7"/><path d="M32 31v-4"/>',
   legs: '<path d="M18 8h28l4 48h-12l-6-30-6 30H14z"/><path d="M18 16h28"/>',
-  bag: '<rect x="14" y="18" width="36" height="38" rx="6"/><path d="M24 18v-4a8 8 0 0116 0v4"/><path d="M22 34h20v10H22z"/>',
   shoes: '<path d="M8 40h18l4-4 10 6 14 2c2 0 3 2 3 4v4H8z"/><path d="M8 48h49"/><path d="M14 40V26h12v10"/>',
   glasses: '<circle cx="20" cy="34" r="9"/><circle cx="44" cy="34" r="9"/><path d="M29 33c2-2 4-2 6 0"/><path d="M11 32L6 24M53 32l5-8"/>',
 };

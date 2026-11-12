@@ -1,4 +1,6 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useState } from 'react';
+import useNuiEvent from '../../hooks/useNuiEvent';
+import { Items } from '../../store/items';
 import { useAppSelector } from '../../store';
 import { selectLeftInventory } from '../../store/inventory';
 import InventorySlot from '../inventory/InventorySlot';
@@ -31,8 +33,15 @@ const PlayerInventory: React.FC = () => {
     []
   );
 
+  // Slot Mochila = último slot normal del jugador (lo manda Lua). Lo que pase de ahí son los slots de la mochila.
+  const [base, setBase] = useState(50);
+  useNuiEvent<{ base: number }>('rustBackpack', (d) => setBase(d.base));
+
   const hotbar = inv.items.filter((i) => i.slot <= HOTBAR_SLOTS);
-  const main = inv.items.filter((i) => i.slot > HOTBAR_SLOTS);
+  const main = inv.items.filter((i) => i.slot > HOTBAR_SLOTS && i.slot < base);
+  const bpSlot = inv.items.find((i) => i.slot === base);
+  const extra = inv.items.filter((i) => i.slot > base);
+  const bpLabel = bpSlot?.name ? bpSlot.metadata?.label || Items[bpSlot.name]?.label : null;
 
   const slot = (item: (typeof inv.items)[number]) => (
     <InventorySlot
@@ -62,11 +71,25 @@ const PlayerInventory: React.FC = () => {
       </div>
       <WeightBar percent={inv.maxWeight ? (weight / inv.maxWeight) * 100 : 0} />
       <div className="rust-grid rust-grid-main">{main.map(slot)}</div>
+
+      {extra.length > 0 && (
+        <>
+          <div className="rust-section-title rust-hotbar-title">
+            <span>{bpLabel || 'Mochila'}</span>
+            <small>+{extra.length} slots</small>
+          </div>
+          <div className="rust-grid rust-grid-backpack">{extra.map(slot)}</div>
+        </>
+      )}
+
       <div className="rust-section-title rust-hotbar-title">
         <span>Barra rápida</span>
-        <small>Teclas 1 - {HOTBAR_SLOTS}</small>
+        <small>Teclas 1 - {HOTBAR_SLOTS} · Mochila</small>
       </div>
-      <div className="rust-grid rust-grid-hotbar">{hotbar.map(slot)}</div>
+      <div className="rust-grid rust-grid-hotbar">
+        {hotbar.map(slot)}
+        {bpSlot && <div className={`rust-bp-slot ${bpSlot.name ? '' : 'empty'}`}>{slot(bpSlot)}</div>}
+      </div>
     </div>
   );
 };
