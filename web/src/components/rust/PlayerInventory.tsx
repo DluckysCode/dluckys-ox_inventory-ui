@@ -1,0 +1,74 @@
+import React, { useMemo } from 'react';
+import { useAppSelector } from '../../store';
+import { selectLeftInventory } from '../../store/inventory';
+import InventorySlot from '../inventory/InventorySlot';
+import WeightBar from '../utils/WeightBar';
+import { getTotalWeight } from '../../helpers';
+import { useDrop } from 'react-dnd';
+import { fetchNui } from '../../utils/fetchNui';
+import type { ClothDrag } from './RustClothing';
+
+export const HOTBAR_SLOTS = 5;
+
+const PlayerInventory: React.FC = () => {
+  const inv = useAppSelector(selectLeftInventory);
+  const isBusy = useAppSelector((state) => state.inventory.isBusy);
+
+  const weight = useMemo(
+    () => (inv.maxWeight !== undefined ? Math.floor(getTotalWeight(inv.items) * 1000) / 1000 : 0),
+    [inv.maxWeight, inv.items]
+  );
+
+  // Soltar una prenda (arrastrada desde las ranuras de ropa) en el inventario = quitártela
+  const [{ isOver }, drop] = useDrop<ClothDrag, void, { isOver: boolean }>(
+    () => ({
+      accept: 'CLOTH',
+      collect: (m) => ({ isOver: m.isOver() }),
+      drop: (source) => {
+        fetchNui('rustClothesTakeOff', { kind: source.kind });
+      },
+    }),
+    []
+  );
+
+  const hotbar = inv.items.filter((i) => i.slot <= HOTBAR_SLOTS);
+  const main = inv.items.filter((i) => i.slot > HOTBAR_SLOTS);
+
+  const slot = (item: (typeof inv.items)[number]) => (
+    <InventorySlot
+      key={`player-${inv.id}-${item.slot}`}
+      item={item}
+      inventoryType={inv.type}
+      inventoryGroups={inv.groups}
+      inventoryId={inv.id}
+    />
+  );
+
+  return (
+    <div
+      ref={(el) => {
+        drop(el);
+      }}
+      className={`rust-player ${isOver ? 'cloth-over' : ''}`}
+      style={{ pointerEvents: isBusy ? 'none' : 'auto' }}
+    >
+      <div className="rust-section-title">
+        <span>Inventario</span>
+        {inv.maxWeight ? (
+          <small>
+            {weight / 1000}/{inv.maxWeight / 1000}kg
+          </small>
+        ) : null}
+      </div>
+      <WeightBar percent={inv.maxWeight ? (weight / inv.maxWeight) * 100 : 0} />
+      <div className="rust-grid rust-grid-main">{main.map(slot)}</div>
+      <div className="rust-section-title rust-hotbar-title">
+        <span>Barra rápida</span>
+        <small>Teclas 1 - {HOTBAR_SLOTS}</small>
+      </div>
+      <div className="rust-grid rust-grid-hotbar">{hotbar.map(slot)}</div>
+    </div>
+  );
+};
+
+export default PlayerInventory;

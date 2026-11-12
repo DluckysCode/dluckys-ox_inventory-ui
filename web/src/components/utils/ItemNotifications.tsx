@@ -12,6 +12,8 @@ import Fade from './transitions/Fade';
 interface ItemNotificationProps {
   item: SlotWithItem;
   text: string;
+  kind?: string;
+  count?: number;
 }
 
 export const ItemNotificationsContext = React.createContext<{
@@ -27,24 +29,16 @@ export const useItemNotifications = () => {
 const ItemNotification = React.forwardRef(
   (props: { item: ItemNotificationProps; style?: React.CSSProperties }, ref: React.ForwardedRef<HTMLDivElement>) => {
     const slotItem = props.item.item;
+    const { kind, count, text } = props.item;
+    const label = slotItem.metadata?.label || Items[slotItem.name]?.label || slotItem.name;
+    const amount =
+      kind === 'ui_added' ? `+${count ?? ''}` : kind === 'ui_removed' ? `−${count ?? ''}` : text;
 
     return (
-      <div
-        className="item-notification-item-box"
-        style={{
-          backgroundImage: `url(${getItemUrl(slotItem) || 'none'}`,
-          ...props.style,
-        }}
-        ref={ref}
-      >
-        <div className="item-slot-wrapper">
-          <div className="item-notification-action-box">
-            <p>{props.item.text}</p>
-          </div>
-          <div className="inventory-slot-label-box">
-            <div className="inventory-slot-label-text">{slotItem.metadata?.label || Items[slotItem.name]?.label}</div>
-          </div>
-        </div>
+      <div className={`rust-notify ${kind === 'ui_added' ? 'add' : kind === 'ui_removed' ? 'remove' : 'info'}`} style={props.style} ref={ref}>
+        <span className="amount">{amount}</span>
+        <span className="label">{label}</span>
+        <span className="icon" style={{ backgroundImage: `url(${getItemUrl(slotItem) || 'none'})` }} />
       </div>
     );
   }
@@ -70,7 +64,7 @@ export const ItemNotificationsProvider = ({ children }: { children: React.ReactN
   };
 
   useNuiEvent<[item: SlotWithItem, text: string, count?: number]>('itemNotify', ([item, text, count]) => {
-    add({ item: item, text: count ? `${Locale[text]} ${count}x` : `${Locale[text]}` });
+    add({ item: item, kind: text, count, text: count ? `${Locale[text]} ${count}x` : `${Locale[text]}` });
   });
 
   return (

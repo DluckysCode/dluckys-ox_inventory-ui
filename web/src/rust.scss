@@ -1,0 +1,772 @@
+// ===== Inventario estilo Rust =====
+@import url('https://fonts.googleapis.com/css2?family=Roboto+Condensed:wght@400;700&display=swap');
+
+$bg: rgba(24, 24, 21, 0.78);
+$panel: rgba(52, 51, 46, 0.82);
+$slot: rgba(78, 76, 69, 0.72);
+$slotHi: rgba(110, 107, 96, 0.85);
+$text: #e1ddd1;
+$muted: #9c988b;
+$accent: #cd412b;
+$green: #6f8f3a;
+$greenHi: #8bb045;
+$red: #c0472f;
+$slotSize: 8.6vh;
+$gap: 0.45vh;
+
+body {
+  font-family: 'Roboto Condensed', Roboto, sans-serif;
+}
+p,
+button,
+input {
+  font-family: 'Roboto Condensed', Roboto, sans-serif !important;
+}
+
+.rust-root {
+  position: fixed;
+  inset: 0;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+  gap: 2.5vh;
+  padding: 5vh 3vw;
+  box-sizing: border-box;
+  background: linear-gradient(
+    to right,
+    rgba(0, 0, 0, 0.35) 0%,
+    rgba(0, 0, 0, 0) 12%,
+    rgba(0, 0, 0, 0) 30%,
+    rgba(0, 0, 0, 0.45) 45%,
+    rgba(0, 0, 0, 0.55) 100%
+  );
+  color: $text;
+}
+
+.rust-col {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+.rust-left {
+  justify-content: flex-start;
+  align-items: flex-start;
+}
+.rust-center {
+  justify-content: flex-end;
+  gap: 1.2vh;
+}
+.rust-right {
+  justify-content: flex-end;
+  align-items: flex-end;
+}
+
+.rust-section-title {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  text-transform: uppercase;
+  font-weight: 700;
+  font-size: 2.1vh;
+  letter-spacing: 0.06em;
+  margin-bottom: 0.6vh;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.6);
+
+  small {
+    font-size: 1.25vh;
+    color: $muted;
+    letter-spacing: 0.04em;
+  }
+}
+
+// ---------- Slots (comunes) ----------
+.rust-root {
+  .inventory-slot {
+    background-color: $slot;
+    background-size: 70%;
+    border-radius: 0;
+    border: none;
+    box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.35);
+    transition: background-color 0.1s;
+
+    &:hover {
+      background-color: $slotHi;
+    }
+  }
+  .inventory-slot-label-box {
+    background: transparent;
+    border: none;
+  }
+  .inventory-slot-label-text {
+    font-size: 1.15vh;
+    font-weight: 700;
+    color: $text;
+    text-shadow: 0 1px 2px #000;
+  }
+  .item-slot-info-wrapper p {
+    font-weight: 700;
+    font-size: 1.2vh;
+    color: $text;
+    text-shadow: 0 1px 2px #000;
+  }
+  .inventory-slot-number {
+    background: transparent;
+    color: $muted;
+    font-weight: 700;
+    border-radius: 0;
+  }
+  .weight-bar,
+  .durability-bar {
+    border-radius: 0;
+  }
+}
+
+.rust-grid {
+  display: grid;
+  grid-template-columns: repeat(6, $slotSize);
+  grid-auto-rows: $slotSize;
+  gap: $gap;
+}
+.rust-grid-main {
+  max-height: calc(4 * #{$slotSize} + 3 * #{$gap});
+  overflow-y: auto;
+  margin-top: 0.8vh;
+}
+.rust-hotbar-title {
+  margin-top: 1.6vh;
+}
+.rust-grid-hotbar {
+  grid-template-columns: repeat(5, $slotSize);
+
+  .inventory-slot {
+    box-shadow:
+      inset 3px 0 0 $greenHi,
+      inset 0 0 0 1px rgba(0, 0, 0, 0.35);
+  }
+}
+
+// ---------- Controles (cantidad / usar / dar) ----------
+.rust-center .inventory-control {
+  .inventory-control-wrapper {
+    flex-direction: row;
+    gap: $gap;
+  }
+  .inventory-control-input,
+  .inventory-control-button {
+    background: $panel;
+    border-radius: 0;
+    color: $text;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    padding: 1vh 1.2vh;
+    font-size: 1.4vh;
+    width: auto;
+    flex: 1;
+  }
+  .inventory-control-input {
+    max-width: 9vh;
+  }
+  .inventory-control-button:hover {
+    background: $slotHi;
+  }
+}
+
+// ---------- Personaje / ropa ----------
+.rust-character {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+.rust-name {
+  font-size: 3.4vh;
+  font-weight: 700;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.7);
+}
+.rust-name-sub {
+  font-size: 1.3vh;
+  color: $muted;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  margin-bottom: 1.6vh;
+}
+.rust-paperdoll {
+  display: flex;
+  gap: 1.6vh;
+  align-items: stretch;
+}
+.rust-cloth-col {
+  display: flex;
+  flex-direction: column;
+  gap: 1vh;
+}
+.rust-cloth {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3vh;
+
+  span {
+    font-size: 1.15vh;
+    font-weight: 700;
+    text-transform: uppercase;
+    color: $muted;
+  }
+}
+.rust-cloth-slot {
+  width: 7.4vh;
+  height: 7.4vh;
+  background: $slot center / 55% no-repeat;
+  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.35);
+  opacity: 0.45;
+  cursor: default;
+  transition: all 0.1s;
+
+  &.worn {
+    opacity: 1;
+    cursor: pointer;
+    box-shadow:
+      inset 3px 0 0 $greenHi,
+      inset 0 0 0 1px rgba(0, 0, 0, 0.35);
+  }
+  &.worn:hover {
+    background-color: rgba(192, 71, 47, 0.55);
+  }
+  &.over {
+    opacity: 1;
+    background-color: $slotHi;
+    box-shadow: inset 0 0 0 2px $greenHi;
+  }
+}
+.rust-player.cloth-over .rust-grid-main {
+  outline: 2px dashed $greenHi;
+  outline-offset: 0.4vh;
+}
+.rust-ped-space {
+  width: 34vh;
+}
+
+// ---------- Columna derecha ----------
+.rust-right-tabs {
+  display: flex;
+  gap: $gap;
+  margin-bottom: $gap;
+  width: 46vh;
+
+  button {
+    flex: 1;
+    border: none;
+    padding: 1.1vh;
+    background: $panel;
+    color: $muted;
+    font-size: 1.9vh;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    cursor: pointer;
+
+    &.active {
+      background: rgba(80, 78, 70, 0.95);
+      color: $text;
+    }
+    &:active {
+      transform: none;
+    }
+  }
+}
+.rust-right-body {
+  width: 46vh;
+  max-height: 80vh;
+  display: flex;
+  flex-direction: column;
+
+  // Contenedor (maletero, stash, suelo…)
+  .inventory-grid-wrapper {
+    background: $bg;
+    padding: 1vh;
+  }
+  .inventory-grid-header-wrapper p {
+    text-transform: uppercase;
+    font-weight: 700;
+    color: $text;
+  }
+  .inventory-grid-container {
+    grid-template-columns: repeat(5, 8.5vh);
+    grid-auto-rows: 8.5vh;
+    gap: $gap;
+    height: auto;
+    max-height: 64vh;
+  }
+}
+
+// ---------- Crafteo ----------
+.rust-craft {
+  background: $bg;
+  padding: 1vh;
+  display: flex;
+  flex-direction: column;
+  gap: 0.8vh;
+}
+.rust-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.3vh;
+
+  button {
+    flex: 1 0 auto;
+    padding: 0.7vh 0.9vh;
+    border: none;
+    background: $slot;
+    color: $muted;
+    font-size: 1.2vh;
+    font-weight: 700;
+    text-transform: uppercase;
+    cursor: pointer;
+
+    &.active {
+      background: $accent;
+      color: #fff;
+    }
+    &:active {
+      transform: none;
+    }
+  }
+}
+.rust-search {
+  border: none;
+  outline: none;
+  padding: 0.8vh 1vh;
+  background: rgba(0, 0, 0, 0.35);
+  color: $text;
+  font-size: 1.4vh;
+}
+.rust-recipes {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: $gap;
+  max-height: calc(2 * 7vh + #{$gap});
+  overflow-y: auto;
+}
+.rust-recipe {
+  aspect-ratio: 1;
+  background: $slot center / 70% no-repeat;
+  position: relative;
+  cursor: pointer;
+  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.35);
+
+  &:hover {
+    background-color: $slotHi;
+  }
+  &.sel {
+    box-shadow: inset 0 0 0 2px $accent;
+  }
+  &.can::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    height: 3px;
+    background: $greenHi;
+  }
+  &.cant {
+    opacity: 0.45;
+  }
+  .star {
+    position: absolute;
+    right: 3px;
+    bottom: 3px;
+    color: #f2b230;
+    font-size: 1.6vh;
+    text-shadow: 0 1px 2px #000;
+  }
+}
+.rust-empty {
+  grid-column: 1 / -1;
+  color: $muted;
+  font-size: 1.3vh;
+  padding: 1vh 0;
+}
+.rust-detail {
+  background: $panel;
+  padding: 1vh;
+}
+.rust-detail-head {
+  display: flex;
+  gap: 1vh;
+  align-items: flex-start;
+  margin-bottom: 1vh;
+
+  h3 {
+    margin: 0;
+    font-size: 2.2vh;
+    text-transform: uppercase;
+  }
+  p {
+    color: $muted;
+    font-size: 1.25vh;
+  }
+  > div:nth-child(2) {
+    flex: 1;
+  }
+}
+.rust-detail-icon {
+  width: 6vh;
+  height: 6vh;
+  background: rgba(0, 0, 0, 0.3) center / 80% no-repeat;
+}
+.rust-fav {
+  border: none;
+  background: transparent;
+  color: $muted;
+  font-size: 2.4vh;
+  cursor: pointer;
+
+  &.on {
+    color: #f2b230;
+  }
+  &:active {
+    transform: none;
+  }
+}
+.rust-ing {
+  display: grid;
+  grid-template-columns: 3.4vh 1fr 5vh 5vh;
+  gap: 0.6vh;
+  align-items: center;
+  font-size: 1.35vh;
+  background: rgba(0, 0, 0, 0.25);
+  margin-bottom: 0.3vh;
+  padding-right: 0.6vh;
+
+  span:nth-child(3),
+  span:nth-child(4) {
+    text-align: right;
+  }
+  .ico {
+    width: 3.4vh;
+    height: 3.4vh;
+    background: center / contain no-repeat;
+  }
+  .ok {
+    color: $greenHi;
+  }
+  .bad {
+    color: $red;
+  }
+  &.head {
+    background: transparent;
+    color: $muted;
+    font-size: 1.05vh;
+    text-transform: uppercase;
+  }
+}
+.rust-actions {
+  display: flex;
+  gap: $gap;
+  margin-top: 0.8vh;
+}
+.rust-qty {
+  display: flex;
+  background: rgba(0, 0, 0, 0.35);
+
+  button {
+    width: 3.4vh;
+    border: none;
+    background: $slot;
+    color: $text;
+    font-size: 1.8vh;
+    cursor: pointer;
+    &:active {
+      transform: none;
+    }
+  }
+  input {
+    width: 5vh;
+    text-align: center;
+    border: none;
+    outline: none;
+    background: transparent;
+    color: $text;
+    font-size: 1.6vh;
+  }
+}
+.rust-craft-btn {
+  flex: 1;
+  border: none;
+  padding: 1.1vh;
+  background: $green;
+  color: #fff;
+  font-size: 1.7vh;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  cursor: pointer;
+
+  &:hover {
+    background: $greenHi;
+  }
+  &:disabled {
+    background: #47463f;
+    color: #8a877c;
+    cursor: default;
+  }
+  &:active {
+    transform: none;
+  }
+}
+.rust-tabs button.special {
+  background: rgba(111, 143, 58, 0.45);
+  color: $text;
+  &.active {
+    background: $green;
+  }
+}
+.rust-list {
+  display: flex;
+  flex-direction: column;
+  gap: $gap;
+  max-height: 38vh;
+  overflow-y: auto;
+}
+.rust-row {
+  display: flex;
+  align-items: center;
+  gap: 0.8vh;
+  background: $panel;
+  padding: 0.6vh;
+
+  .ico {
+    width: 5vh;
+    height: 5vh;
+    flex: none;
+    background: rgba(0, 0, 0, 0.3) center / 80% no-repeat;
+  }
+  .info {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 0.3vh;
+    font-size: 1.35vh;
+    min-width: 0;
+
+    b {
+      text-transform: uppercase;
+    }
+    small {
+      font-size: 1.15vh;
+      color: $muted;
+    }
+    .ok {
+      color: $greenHi;
+    }
+    .bad {
+      color: $red;
+    }
+  }
+  .dur {
+    height: 0.5vh;
+    background: rgba(0, 0, 0, 0.4);
+    div {
+      height: 100%;
+      background: #d9822b;
+    }
+  }
+  button {
+    border: none;
+    padding: 0.8vh 1vh;
+    background: $green;
+    color: #fff;
+    font-size: 1.2vh;
+    font-weight: 700;
+    text-transform: uppercase;
+    cursor: pointer;
+    &:disabled {
+      background: #47463f;
+      color: #8a877c;
+      cursor: default;
+    }
+    &:active {
+      transform: none;
+    }
+  }
+}
+.rust-row-qty {
+  width: 4.5vh;
+  border: none;
+  outline: none;
+  text-align: center;
+  padding: 0.7vh 0;
+  background: rgba(0, 0, 0, 0.35);
+  color: $text;
+  font-size: 1.3vh;
+}
+.rust-craft-all {
+  width: 100%;
+  margin-top: $gap;
+  border: none;
+  padding: 0.8vh;
+  background: rgba(111, 143, 58, 0.35);
+  color: $text;
+  font-size: 1.3vh;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  cursor: pointer;
+
+  &:hover {
+    background: rgba(139, 176, 69, 0.6);
+  }
+  &:disabled {
+    background: rgba(71, 70, 63, 0.6);
+    color: #8a877c;
+    cursor: default;
+  }
+  &:active {
+    transform: none;
+  }
+}
+.rust-bench-req {
+  margin-top: 0.8vh;
+  padding: 0.6vh 1vh;
+  background: rgba(192, 71, 47, 0.25);
+  color: #e8a594;
+  font-size: 1.3vh;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+.rust-recipe .lock {
+  position: absolute;
+  left: 3px;
+  top: 2px;
+  font-size: 1.4vh;
+}
+.rust-msg {
+  color: $red;
+  font-size: 1.3vh;
+}
+.rust-queue {
+  display: flex;
+  flex-wrap: wrap;
+  gap: $gap;
+  min-height: 7vh;
+}
+.rust-job {
+  width: 7vh;
+  height: 7vh;
+  background: $slot center / 65% no-repeat;
+  position: relative;
+  cursor: pointer;
+
+  .x {
+    position: absolute;
+    left: 0.4vh;
+    top: 0.2vh;
+    font-size: 1.1vh;
+    color: $muted;
+  }
+  .n {
+    position: absolute;
+    right: 0.4vh;
+    top: 0.2vh;
+    font-size: 1.2vh;
+    font-weight: 700;
+  }
+  .t {
+    position: absolute;
+    right: 0.4vh;
+    bottom: 0.5vh;
+    font-size: 1.2vh;
+    font-weight: 700;
+    text-shadow: 0 1px 2px #000;
+  }
+  .bar {
+    position: absolute;
+    left: 0;
+    bottom: 0;
+    height: 3px;
+    background: $accent;
+  }
+  &:hover {
+    background-color: rgba(192, 71, 47, 0.55);
+  }
+}
+
+// ---------- Avisos de items (+5 Tela / −1 Bandage) ----------
+.item-notification-container {
+  position: fixed;
+  left: auto;
+  right: 2vw;
+  bottom: 46vh; // por encima del HUD y del velocímetro
+  width: auto;
+  margin: 0;
+  transform: none;
+  overflow: visible;
+  display: flex;
+  flex-direction: column-reverse;
+  align-items: flex-end;
+  gap: 0.4vh;
+  pointer-events: none;
+}
+.rust-notify {
+  display: flex;
+  align-items: center;
+  gap: 1vh;
+  min-width: 24vh;
+  height: 4.4vh;
+  padding-left: 1.2vh;
+  background: rgba(30, 30, 26, 0.85);
+  color: $text;
+  font-family: 'Roboto Condensed', Roboto, sans-serif;
+  text-transform: uppercase;
+  box-shadow: inset 4px 0 0 $muted;
+
+  &.add {
+    box-shadow: inset 4px 0 0 $greenHi;
+    .amount {
+      color: $greenHi;
+    }
+  }
+  &.remove {
+    box-shadow: inset 4px 0 0 $red;
+    .amount {
+      color: $red;
+    }
+  }
+
+  .amount {
+    font-size: 2vh;
+    font-weight: 700;
+    min-width: 4vh;
+  }
+  .label {
+    flex: 1;
+    font-size: 1.6vh;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    white-space: nowrap;
+  }
+  .icon {
+    width: 4.4vh;
+    height: 4.4vh;
+    background: rgba(78, 76, 69, 0.72) center / 75% no-repeat;
+  }
+}
+
+// ---------- Tooltip / menú contextual ----------
+.tooltip-wrapper,
+.context-menu-list,
+.useful-controls-dialog {
+  background-color: rgba(28, 28, 25, 0.96) !important;
+  border-radius: 0 !important;
+  color: $text !important;
+}
+.context-menu-item {
+  border-radius: 0 !important;
+  &:hover {
+    background-color: $slotHi !important;
+  }
+}
+
+// Hotbar emergente (con el inventario cerrado)
+.hotbar-container .hotbar-item-slot {
+  background-color: $slot;
+  border-radius: 0;
+}
