@@ -9,9 +9,6 @@ type Item = { name: string; label: string };
 type World = {
   benches: (Pos & { id: string; template: string; label: string; h: number })[];
   templates: Opt[];
-  lootTypes: Opt[];
-  loot: (Pos & { id: string; t: string; label: string })[];
-  zones: (Pos & { id: string; t: string; label: string; radius: number; count: number })[];
   boxTypes: Opt[];
   boxes: (Pos & { id: string; label: string; owner: string; ownerName?: string })[];
 };
@@ -42,7 +39,6 @@ const KINDS: Record<string, string> = {
   craft: 'Crafteo',
   recycle: 'Reciclaje',
   repair: 'Reparación',
-  loot: 'Botín',
   blueprint: 'Plano',
   box: 'Caja',
   admin: 'Admin',
@@ -86,7 +82,6 @@ const ItemList: React.FC<{ items: Item[] }> = ({ items }) => (
 // ---------- Pestaña Mundo ----------
 const WorldTab: React.FC<{ data: World; reload: () => void }> = ({ data, reload }) => {
   const [map, setMap] = useState(false);
-  const [zone, setZone] = useState({ type: data.lootTypes[0]?.id || '', radius: 20, count: 5 });
   const run = async (action: string, extra: Record<string, unknown>) => {
     await act(action, extra);
     reload();
@@ -118,62 +113,6 @@ const WorldTab: React.FC<{ data: World; reload: () => void }> = ({ data, reload 
               Ir
             </button>
             <DeleteButton onConfirm={() => run('removeBench', { id: b.id })} />
-          </Row>
-        ))}
-      </div>
-
-      <div className="rust-section-title">
-        <span>Botín fijo</span>
-        <small>{data.loot.length}</small>
-      </div>
-      <div className="rust-admin-add">
-        {data.lootTypes.map((t) => (
-          <button key={t.id} onClick={() => act('addLoot', { type: t.id })}>
-            + {t.label}
-          </button>
-        ))}
-      </div>
-      <div className="rust-list">
-        {data.loot.map((p) => (
-          <Row key={p.id} title={p.label} sub={fmt(p)}>
-            <button onClick={() => act('moveLoot', { id: p.id, type: p.t })}>Mover</button>
-            <button className="alt" onClick={() => goto(p)}>
-              Ir
-            </button>
-            <DeleteButton onConfirm={() => run('removeLoot', { id: p.id })} />
-          </Row>
-        ))}
-      </div>
-
-      <div className="rust-section-title">
-        <span>Zonas de botín</span>
-        <small>{data.zones.length}</small>
-      </div>
-      <div className="rust-admin-form">
-        <select value={zone.type} onChange={(e) => setZone({ ...zone, type: e.target.value })}>
-          {data.lootTypes.map((t) => (
-            <option key={t.id} value={t.id}>
-              {t.label}
-            </option>
-          ))}
-        </select>
-        <label>
-          Radio
-          <input type="number" value={zone.radius} onKeyDown={stop} onChange={(e) => setZone({ ...zone, radius: +e.target.value })} />
-        </label>
-        <label>
-          Cantidad
-          <input type="number" value={zone.count} onKeyDown={stop} onChange={(e) => setZone({ ...zone, count: +e.target.value })} />
-        </label>
-        <button onClick={() => act('addZone', zone)}>Dibujar zona</button>
-      </div>
-      <div className="rust-list">
-        {data.zones.map((z) => (
-          <Row key={z.id} title={`${z.label} ×${z.count}`} sub={`Radio ${z.radius} m · ${fmt(z)}`}>
-            <button className="alt" onClick={() => goto(z)}>
-              Ir
-            </button>
-            <DeleteButton onConfirm={() => run('removeZone', { id: z.id })} />
           </Row>
         ))}
       </div>
