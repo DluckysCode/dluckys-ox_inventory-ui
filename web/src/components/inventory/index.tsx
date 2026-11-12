@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import useNuiEvent from '../../hooks/useNuiEvent';
 import InventoryControl from './InventoryControl';
-import InventoryHotbar from './InventoryHotbar';
 import { useAppDispatch, useAppSelector } from '../../store';
 import { refreshSlots, selectRightInventory, setAdditionalMetadata, setupInventory } from '../../store/inventory';
 import { useExitListener } from '../../hooks/useExitListener';
@@ -86,7 +85,6 @@ const Inventory: React.FC = () => {
           <InventoryContext />
         </div>
       </Fade>
-      <InventoryHotbar />
       <CraftSoundPlayer />
     </>
   );

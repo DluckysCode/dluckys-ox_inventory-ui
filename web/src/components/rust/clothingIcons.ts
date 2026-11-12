@@ -12,7 +12,12 @@ const paths: Record<string, string> = {
   glasses: '<circle cx="20" cy="34" r="9"/><circle cx="44" cy="34" r="9"/><path d="M29 33c2-2 4-2 6 0"/><path d="M11 32L6 24M53 32l5-8"/>',
 };
 
+const cache: Record<string, string> = {};
+
 export const clothingIcon = (id: string) => {
-  const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" fill="none" stroke="#e1ddd1" stroke-width="3" stroke-linejoin="round" stroke-linecap="round">${paths[id] || ''}</svg>`;
-  return `url("data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg)}")`;
+  if (!cache[id]) {
+    const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" fill="none" stroke="#e1ddd1" stroke-width="3" stroke-linejoin="round" stroke-linecap="round">${paths[id] || ''}</svg>`;
+    cache[id] = `url("data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg)}")`;
+  }
+  return cache[id];
 };

@@ -764,9 +764,3 @@ input {
     background-color: $slotHi !important;
   }
 }
-
-// Hotbar emergente (con el inventario cerrado)
-.hotbar-container .hotbar-item-slot {
-  background-color: $slot;
-  border-radius: 0;
-}
