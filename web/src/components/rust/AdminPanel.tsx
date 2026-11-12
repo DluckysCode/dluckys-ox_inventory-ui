@@ -10,7 +10,7 @@ type AdminData = { benches: Bench[]; templates: Template[]; lootTypes: LootType[
 
 const fmt = (p: { x: number; y: number; z: number }) => `${p.x.toFixed(1)}, ${p.y.toFixed(1)}, ${p.z.toFixed(1)}`;
 
-/** /inventory: colocar, mover o eliminar mesas y puntos de botín (solo admins) */
+/** /admininventory: colocar, mover o eliminar mesas y puntos de botín (solo admins) */
 const AdminPanel: React.FC = () => {
   const [data, setData] = useState<AdminData | null>(null);
   const [confirm, setConfirm] = useState<string | null>(null);
