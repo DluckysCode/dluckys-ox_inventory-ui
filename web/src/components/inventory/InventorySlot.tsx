@@ -219,6 +219,8 @@ const InventorySlot: React.ForwardRefRenderFunction<HTMLDivElement, SlotProps> =
               </div>
             </div>
           </div>
+          {/* Estilo Rust: solo la cantidad abajo a la derecha (si hay más de 1) */}
+          {item.count > 1 && <span className="rust-count">x{item.count.toLocaleString('en-us')}</span>}
         </div>
       )}
     </div>
