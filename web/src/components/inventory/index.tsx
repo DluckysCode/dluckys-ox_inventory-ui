@@ -15,6 +15,7 @@ import Fade from '../utils/transitions/Fade';
 import PlayerInventory from '../rust/PlayerInventory';
 import RustClothing from '../rust/RustClothing';
 import RustCrafting from '../rust/RustCrafting';
+import RustShop from '../rust/RustShop';
 import CraftSoundPlayer from '../rust/CraftSoundPlayer';
 import AdminPanel from '../rust/AdminPanel';
 
@@ -85,7 +86,7 @@ const Inventory: React.FC = () => {
               ) : (
                 <>
                   {rightInventory.type === 'player' && <SearchGear target={rightInventory.id} />}
-                  <RightInventory />
+                  {rightInventory.type === 'shop' ? <RustShop /> : <RightInventory />}
                 </>
               )}
             </div>

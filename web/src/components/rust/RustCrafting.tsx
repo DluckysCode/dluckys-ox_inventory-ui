@@ -1,3 +1,4 @@
+import { getRarity, rarityVar } from '../../helpers/rarity';
 import Icon from './Icon';
 import { faLock, faMinus, faPlus, faRecycle, faScroll, faStar, faWrench, faXmark } from '@fortawesome/free-solid-svg-icons';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
@@ -308,7 +309,8 @@ const RustCrafting: React.FC<{ visible: boolean }> = ({ visible }) => {
                 <div
                   key={r.id}
                   className={`rust-recipe ${canMake(r) > 0 ? 'can' : 'cant'} ${sel === r.id ? 'sel' : ''}`}
-                  style={{ backgroundImage: img(r.name) }}
+                  data-rarity={getRarity(r.name)}
+                  style={{ backgroundImage: img(r.name), ...rarityVar(getRarity(r.name)) }}
                   title={reason ? `${r.label} — ${reason}` : `${r.label} (click derecho = craftear 1)`}
                   onClick={() => {
                     setSel(r.id);
@@ -332,7 +334,7 @@ const RustCrafting: React.FC<{ visible: boolean }> = ({ visible }) => {
               <div className="rust-detail-head">
                 <div className="rust-detail-icon" style={{ backgroundImage: img(recipe.name) }} />
                 <div>
-                  <h3>
+                  <h3 className="rarity-text" style={rarityVar(getRarity(recipe.name))}>
                     {recipe.label}
                     {recipe.count > 1 ? ` x${recipe.count}` : ''}
                   </h3>

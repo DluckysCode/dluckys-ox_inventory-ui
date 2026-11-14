@@ -1,3 +1,4 @@
+import { RARITIES, getRarity, rarityVar } from '../../helpers/rarity';
 import { Inventory, SlotWithItem } from '../../typings';
 import React, { Fragment, useMemo } from 'react';
 import { Items } from '../../store/items';
@@ -19,6 +20,7 @@ const SlotTooltip: React.ForwardRefRenderFunction<
     return Object.entries(item.ingredients).sort((a, b) => a[1] - b[1]);
   }, [item]);
   const description = item.metadata?.description || itemData?.description;
+  const rarity = getRarity(item.name, item.metadata);
   const ammoName = itemData?.ammoName && Items[itemData?.ammoName]?.label;
 
   return (
@@ -33,7 +35,10 @@ const SlotTooltip: React.ForwardRefRenderFunction<
       ) : (
         <div style={{ ...style }} className="tooltip-wrapper" ref={ref}>
           <div className="tooltip-header-wrapper">
-            <p>{item.metadata?.label || itemData.label || item.name}</p>
+            <div className="rust-tip-title" style={rarityVar(rarity)}>
+              <p>{item.metadata?.label || itemData.label || item.name}</p>
+              <span>{RARITIES[rarity].label}</span>
+            </div>
             {inventoryType === 'crafting' ? (
               <div className="tooltip-crafting-duration">
                 <ClockIcon />

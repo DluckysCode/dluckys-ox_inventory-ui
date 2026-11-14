@@ -14,6 +14,8 @@ import type { ClothDrag } from './RustClothing';
 import { playZipper } from './sounds';
 
 export const HOTBAR_SLOTS = 5;
+// Slot Mochila actual, para quien lo necesite fuera de este componente (p. ej. la tienda)
+export const bagBase = { current: 50 };
 
 const PlayerInventory: React.FC = () => {
   const inv = useAppSelector(selectLeftInventory);
@@ -40,7 +42,10 @@ const PlayerInventory: React.FC = () => {
 
   // Slot Mochila = último slot normal del jugador (lo manda Lua). Lo que pase de ahí son los slots de la mochila.
   const [base, setBase] = useState(50);
-  useNuiEvent<{ base: number }>('rustBackpack', (d) => setBase(d.base));
+  useNuiEvent<{ base: number }>('rustBackpack', (d) => {
+    setBase(d.base);
+    bagBase.current = d.base;
+  });
 
   const hotbar = inv.items.filter((i) => i.slot <= HOTBAR_SLOTS);
   const main = inv.items.filter((i) => i.slot > HOTBAR_SLOTS && i.slot < base);

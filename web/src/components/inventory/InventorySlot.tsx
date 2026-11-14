@@ -1,15 +1,14 @@
+import { getRarity, rarityVar } from '../../helpers/rarity';
 import React, { useCallback, useRef } from 'react';
 import { DragSource, Inventory, InventoryType, Slot, SlotWithItem } from '../../typings';
 import { useDrag, useDragDropManager, useDrop } from 'react-dnd';
 import { useAppDispatch } from '../../store';
 import WeightBar from '../utils/WeightBar';
 import { onDrop } from '../../dnd/onDrop';
-import { onBuy } from '../../dnd/onBuy';
 import { Items } from '../../store/items';
 import { canCraftItem, canPurchaseItem, getItemUrl, isSlotWithItem } from '../../helpers';
 import { onUse } from '../../dnd/onUse';
 import { Locale } from '../../store/locale';
-import { onCraft } from '../../dnd/onCraft';
 import useNuiEvent from '../../hooks/useNuiEvent';
 import { ItemsPayload } from '../../reducers/refreshSlots';
 import { closeTooltip, openTooltip } from '../../store/tooltip';
@@ -71,17 +70,8 @@ const InventorySlot: React.ForwardRefRenderFunction<HTMLDivElement, SlotProps> =
           fetchNui('rustClothesTakeOff', { kind: source.kind, slot: item.slot });
           return;
         }
-        switch (source.inventory) {
-          case InventoryType.SHOP:
-            onBuy(source, { inventory: inventoryType, item: { slot: item.slot } });
-            break;
-          case InventoryType.CRAFTING:
-            onCraft(source, { inventory: inventoryType, item: { slot: item.slot } });
-            break;
-          default:
-            onDrop(source, { inventory: inventoryType, item: { slot: item.slot } });
-            break;
-        }
+        // la tienda compra con su botón (RustShop) y el crafteo va por RustCrafting
+        onDrop(source, { inventory: inventoryType, item: { slot: item.slot } });
       },
       canDrop: (source, monitor) =>
         monitor.getItemType() === 'CLOTH'
@@ -136,7 +126,9 @@ const InventorySlot: React.ForwardRefRenderFunction<HTMLDivElement, SlotProps> =
       onContextMenu={handleContext}
       onClick={handleClick}
       className="inventory-slot"
+      data-rarity={isSlotWithItem(item) ? getRarity(item.name, item.metadata) : undefined}
       style={{
+        ...(isSlotWithItem(item) ? rarityVar(getRarity(item.name, item.metadata)) : {}),
         filter:
           !canPurchaseItem(item, { type: inventoryType, groups: inventoryGroups }) || !canCraftItem(item, inventoryType)
             ? 'brightness(80%) grayscale(100%)'

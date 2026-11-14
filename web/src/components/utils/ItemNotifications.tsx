@@ -1,3 +1,4 @@
+import { getRarity, rarityVar } from '../../helpers/rarity';
 import React, { useContext } from 'react';
 import { createPortal } from 'react-dom';
 import { TransitionGroup } from 'react-transition-group';
@@ -37,7 +38,7 @@ const ItemNotification = React.forwardRef(
     return (
       <div className={`rust-notify ${kind === 'ui_added' ? 'add' : kind === 'ui_removed' ? 'remove' : 'info'}`} style={props.style} ref={ref}>
         <span className="amount">{amount}</span>
-        <span className="label">{label}</span>
+        <span className="label" style={rarityVar(getRarity(slotItem.name, slotItem.metadata))}>{label}</span>
         <span className="icon" style={{ backgroundImage: `url(${getItemUrl(slotItem) || 'none'})` }} />
       </div>
     );
