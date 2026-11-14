@@ -258,8 +258,15 @@ input {
   cursor: default;
   transition: all 0.1s;
 
+  // Ranura con imagen PNG de la prenda: más grande; vacía se ve gris y transparente
+  &.img {
+    background-size: 82%;
+    opacity: 0.3;
+    filter: grayscale(1);
+  }
   &.worn {
     opacity: 1;
+    filter: none;
     cursor: pointer;
     box-shadow:
       inset 3px 0 0 $greenHi,

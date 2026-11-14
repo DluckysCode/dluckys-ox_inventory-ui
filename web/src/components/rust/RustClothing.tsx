@@ -7,7 +7,7 @@ import { selectLeftInventory } from '../../store/inventory';
 import { DragSource } from '../../typings';
 import { clothingIcon } from './clothingIcons';
 
-type ClothingSlot = { id: string; label: string; side: 'left' | 'right'; worn: boolean };
+type ClothingSlot = { id: string; label: string; side: 'left' | 'right'; image?: string; worn: boolean };
 export type ClothDrag = DragSource & { kind: string };
 
 const ClothingSlotBox: React.FC<{ slot: ClothingSlot; busy: boolean; setBusy: (b: boolean) => void }> = ({
@@ -38,7 +38,7 @@ const ClothingSlotBox: React.FC<{ slot: ClothingSlot; busy: boolean; setBusy: (b
   const [{ isDragging }, drag] = useDrag<ClothDrag, void, { isDragging: boolean }>(
     () => ({
       type: 'CLOTH',
-      item: { kind: slot.id, item: { name: 'prenda', slot: 0 }, inventory: 'clothing', image: clothingIcon(slot.id) },
+      item: { kind: slot.id, item: { name: 'prenda', slot: 0 }, inventory: 'clothing', image: clothingIcon(slot) },
       canDrag: () => slot.worn && !busy,
       collect: (m) => ({ isDragging: m.isDragging() }),
     }),
@@ -51,8 +51,8 @@ const ClothingSlotBox: React.FC<{ slot: ClothingSlot; busy: boolean; setBusy: (b
         ref={(el) => {
           drag(drop(el));
         }}
-        className={`rust-cloth-slot ${slot.worn ? 'worn' : ''} ${isOver ? 'over' : ''}`}
-        style={{ backgroundImage: clothingIcon(slot.id) }}
+        className={`rust-cloth-slot ${slot.image ? 'img' : ''} ${slot.worn ? 'worn' : ''} ${isOver ? 'over' : ''}`}
+        style={{ backgroundImage: clothingIcon(slot) }}
         title={slot.worn ? 'Click para quitártela' : 'Arrastra una prenda aquí'}
         onClick={takeOff}
         onContextMenu={(e) => {
