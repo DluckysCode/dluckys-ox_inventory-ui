@@ -53,15 +53,16 @@ const Inventory: React.FC = () => {
     if (rightInventory.type === 'drop') setRightTab('container');
   }, [rightInventory.type, rightInventory.id]);
 
-  const containerLabel =
-    rightInventory.type === 'newdrop' || rightInventory.type === 'drop' ? 'Suelo' : rightInventory.label || 'Contenedor';
+  // Solo tu inventario (o el suelo): ahí sale la ropa. En tiendas, carros, dumpsters, etc. no
+  const personal = rightInventory.type === 'newdrop' || rightInventory.type === 'drop';
+  const containerLabel = personal ? 'Suelo' : rightInventory.label || 'Contenedor';
 
   return (
     <>
       <Fade in={inventoryVisible}>
         <div className="rust-root">
           <div className="rust-col rust-left">
-            <RustClothing />
+            {personal && <RustClothing />}
           </div>
 
           <div className="rust-col rust-center">
