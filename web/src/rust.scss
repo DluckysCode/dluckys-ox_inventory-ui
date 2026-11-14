@@ -1039,3 +1039,38 @@ input {
     color: $text;
   }
 }
+
+// ---------- Registrar a otro jugador: equipo puesto ----------
+.rust-gear {
+  background: $bg;
+  padding: 1vh;
+  margin-bottom: $gap;
+}
+.rust-gear-list {
+  display: flex;
+  gap: $gap;
+}
+.rust-gear-item {
+  width: 9vh;
+  height: 9vh;
+  position: relative;
+  background: $slot center / 70% no-repeat;
+  box-shadow:
+    inset 3px 0 0 #d9822b,
+    inset 0 0 0 1px rgba(0, 0, 0, 0.35);
+  cursor: pointer;
+
+  span {
+    position: absolute;
+    left: 0.4vh;
+    right: 0.4vh;
+    bottom: 0.3vh;
+    font-size: 1.1vh;
+    font-weight: 700;
+    text-transform: uppercase;
+    text-shadow: 0 1px 2px #000;
+  }
+  &:hover {
+    background-color: rgba(192, 71, 47, 0.55);
+  }
+}

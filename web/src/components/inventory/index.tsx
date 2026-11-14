@@ -6,6 +6,7 @@ import { refreshSlots, selectRightInventory, setAdditionalMetadata, setupInvento
 import { useExitListener } from '../../hooks/useExitListener';
 import type { Inventory as InventoryProps } from '../../typings';
 import RightInventory from './RightInventory';
+import SearchGear from '../rust/SearchGear';
 import Tooltip from '../utils/Tooltip';
 import { closeTooltip } from '../../store/tooltip';
 import InventoryContext from './InventoryContext';
@@ -78,7 +79,14 @@ const Inventory: React.FC = () => {
               </button>
             </div>
             <div className="rust-right-body">
-              {rightTab === 'craft' ? <RustCrafting visible={inventoryVisible} /> : <RightInventory />}
+              {rightTab === 'craft' ? (
+                <RustCrafting visible={inventoryVisible} />
+              ) : (
+                <>
+                  {rightInventory.type === 'player' && <SearchGear target={rightInventory.id} />}
+                  <RightInventory />
+                </>
+              )}
             </div>
           </div>
 

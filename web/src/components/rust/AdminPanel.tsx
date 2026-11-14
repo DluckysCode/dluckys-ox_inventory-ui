@@ -41,6 +41,7 @@ const KINDS: Record<string, string> = {
   repair: 'Reparación',
   blueprint: 'Plano',
   box: 'Caja',
+  steal: 'Robo',
   admin: 'Admin',
 };
 
