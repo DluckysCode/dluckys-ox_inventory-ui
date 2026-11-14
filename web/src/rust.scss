@@ -276,18 +276,13 @@ input {
 .rust-cloth-slot {
   width: 7.4vh;
   height: 7.4vh;
-  background: $slot center / 55% no-repeat;
+  background: $slot center / 82% no-repeat;
   box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.35);
-  opacity: 0.45;
+  opacity: 0.3; // vacía: gris y transparente
+  filter: grayscale(1);
   cursor: default;
   transition: all 0.1s;
 
-  // Ranura con imagen PNG de la prenda: más grande; vacía se ve gris y transparente
-  &.img {
-    background-size: 82%;
-    opacity: 0.3;
-    filter: grayscale(1);
-  }
   &.worn {
     opacity: 1;
     filter: none;

@@ -51,7 +51,7 @@ const ClothingSlotBox: React.FC<{ slot: ClothingSlot; busy: boolean; setBusy: (b
         ref={(el) => {
           drag(drop(el));
         }}
-        className={`rust-cloth-slot ${slot.image ? 'img' : ''} ${slot.worn ? 'worn' : ''} ${isOver ? 'over' : ''}`}
+        className={`rust-cloth-slot ${slot.worn ? 'worn' : ''} ${isOver ? 'over' : ''}`}
         style={{ backgroundImage: clothingIcon(slot) }}
         title={slot.worn ? 'Click para quitártela' : 'Arrastra una prenda aquí'}
         onClick={takeOff}
