@@ -24,12 +24,14 @@ const PlayerInventory: React.FC = () => {
     [inv.maxWeight, inv.items]
   );
 
-  // Soltar una prenda (arrastrada desde las ranuras de ropa) en el inventario = quitártela
+  // Soltar una prenda (arrastrada desde las ranuras de ropa) en el inventario = quitártela.
+  // Si cayó sobre un slot vacío, ese slot ya se encargó; si no, va al primer slot libre del inventario principal.
   const [{ isOver }, drop] = useDrop<ClothDrag, void, { isOver: boolean }>(
     () => ({
       accept: 'CLOTH',
       collect: (m) => ({ isOver: m.isOver() }),
-      drop: (source) => {
+      drop: (source, monitor) => {
+        if (monitor.didDrop()) return;
         fetchNui('rustClothesTakeOff', { kind: source.kind });
       },
     }),

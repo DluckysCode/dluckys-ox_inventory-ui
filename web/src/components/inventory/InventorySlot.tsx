@@ -15,6 +15,7 @@ import { ItemsPayload } from '../../reducers/refreshSlots';
 import { closeTooltip, openTooltip } from '../../store/tooltip';
 import { openContextMenu } from '../../store/contextMenu';
 import { useMergeRefs } from '@floating-ui/react';
+import { fetchNui } from '../../utils/fetchNui';
 
 interface SlotProps {
   inventoryId: Inventory['id'];
@@ -57,14 +58,19 @@ const InventorySlot: React.ForwardRefRenderFunction<HTMLDivElement, SlotProps> =
     [inventoryType, item]
   );
 
-  const [{ isOver }, drop] = useDrop<DragSource, void, { isOver: boolean }>(
+  const [{ isOver }, drop] = useDrop<DragSource & { kind?: string }, void, { isOver: boolean }>(
     () => ({
-      accept: 'SLOT',
+      // en tu inventario también se pueden soltar prendas arrastradas desde las ranuras de ropa
+      accept: inventoryType === InventoryType.PLAYER ? ['SLOT', 'CLOTH'] : 'SLOT',
       collect: (monitor) => ({
-        isOver: monitor.isOver(),
+        isOver: monitor.isOver({ shallow: true }) && monitor.canDrop(),
       }),
-      drop: (source) => {
+      drop: (source, monitor) => {
         dispatch(closeTooltip());
+        if (monitor.getItemType() === 'CLOTH') {
+          fetchNui('rustClothesTakeOff', { kind: source.kind, slot: item.slot });
+          return;
+        }
         switch (source.inventory) {
           case InventoryType.SHOP:
             onBuy(source, { inventory: inventoryType, item: { slot: item.slot } });
@@ -77,8 +83,10 @@ const InventorySlot: React.ForwardRefRenderFunction<HTMLDivElement, SlotProps> =
             break;
         }
       },
-      canDrop: (source) =>
-        (source.item.slot !== item.slot || source.inventory !== inventoryType) &&
+      canDrop: (source, monitor) =>
+        monitor.getItemType() === 'CLOTH'
+          ? !isSlotWithItem(item) // la prenda solo cae en un slot vacío
+          : (source.item.slot !== item.slot || source.inventory !== inventoryType) &&
         inventoryType !== InventoryType.SHOP &&
         inventoryType !== InventoryType.CRAFTING,
     }),
