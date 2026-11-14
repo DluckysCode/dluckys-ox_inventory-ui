@@ -1,6 +1,6 @@
 import { useEffect } from 'react';
 import useNuiEvent from '../../hooks/useNuiEvent';
-import { startCraftSound, stopCraftSound } from './craftSound';
+import { startCraftSound, stopCraftSound } from './sounds';
 
 // Siempre montado (aunque el inventario esté cerrado): suena mientras haya algo crafteándose
 const CraftSoundPlayer: React.FC = () => {

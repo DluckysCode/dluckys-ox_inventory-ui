@@ -151,6 +151,30 @@ input {
       inset 0 0 0 1px rgba(0, 0, 0, 0.35);
   }
 }
+// Barra de la mochila (cerrada por defecto; click abre/cierra)
+.rust-bag-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 1.2vh;
+  padding: 0.8vh 1vh;
+  background: rgba(92, 78, 56, 0.8);
+  box-shadow: inset 3px 0 0 #d9822b;
+  font-size: 1.6vh;
+  font-weight: 700;
+  text-transform: uppercase;
+  cursor: pointer;
+  user-select: none;
+
+  small {
+    font-size: 1.15vh;
+    color: $muted;
+  }
+  &:hover,
+  &.open {
+    background: rgba(120, 100, 70, 0.9);
+  }
+}
 .rust-grid-backpack {
   max-height: calc(2 * #{$slotSize} + #{$gap});
   overflow-y: auto;
@@ -1073,4 +1097,8 @@ input {
   &:hover {
     background-color: rgba(192, 71, 47, 0.55);
   }
+}
+
+.rust-bp-slot:not(.empty) {
+  cursor: pointer;
 }

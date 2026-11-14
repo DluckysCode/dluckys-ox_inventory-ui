@@ -9,6 +9,7 @@ import { getTotalWeight } from '../../helpers';
 import { useDrop } from 'react-dnd';
 import { fetchNui } from '../../utils/fetchNui';
 import type { ClothDrag } from './RustClothing';
+import { playZipper } from './sounds';
 
 export const HOTBAR_SLOTS = 5;
 
@@ -42,6 +43,16 @@ const PlayerInventory: React.FC = () => {
   const bpSlot = inv.items.find((i) => i.slot === base);
   const extra = inv.items.filter((i) => i.slot > base);
   const bpLabel = bpSlot?.name ? bpSlot.metadata?.label || Items[bpSlot.name]?.label : null;
+  const used = extra.filter((i) => i.name).length;
+
+  // La mochila sale cerrada cada vez que abres el inventario; click la abre/cierra con sonido de zíper
+  const [bagOpen, setBagOpen] = useState(false);
+  useNuiEvent('setupInventory', () => setBagOpen(false));
+  const toggleBag = () => {
+    if (!extra.length) return;
+    playZipper(!bagOpen);
+    setBagOpen(!bagOpen);
+  };
 
   const slot = (item: (typeof inv.items)[number]) => (
     <InventorySlot
@@ -74,11 +85,13 @@ const PlayerInventory: React.FC = () => {
 
       {extra.length > 0 && (
         <>
-          <div className="rust-section-title rust-hotbar-title">
-            <span>{bpLabel || 'Mochila'}</span>
-            <small>+{extra.length} slots</small>
+          <div className={`rust-bag-bar ${bagOpen ? 'open' : ''}`} onClick={toggleBag}>
+            <span>🎒 {bpLabel || 'Mochila'}</span>
+            <small>
+              {used}/{extra.length} · {bagOpen ? 'click para cerrar' : 'click para abrir'}
+            </small>
           </div>
-          <div className="rust-grid rust-grid-backpack">{extra.map(slot)}</div>
+          {bagOpen && <div className="rust-grid rust-grid-backpack">{extra.map(slot)}</div>}
         </>
       )}
 
@@ -88,7 +101,11 @@ const PlayerInventory: React.FC = () => {
       </div>
       <div className="rust-grid rust-grid-hotbar">
         {hotbar.map(slot)}
-        {bpSlot && <div className={`rust-bp-slot ${bpSlot.name ? '' : 'empty'}`}>{slot(bpSlot)}</div>}
+        {bpSlot && (
+          <div className={`rust-bp-slot ${bpSlot.name ? '' : 'empty'}`} onClick={toggleBag}>
+            {slot(bpSlot)}
+          </div>
+        )}
       </div>
     </div>
   );
