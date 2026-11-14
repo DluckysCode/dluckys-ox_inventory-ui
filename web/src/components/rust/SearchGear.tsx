@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { fetchNui } from '../../utils/fetchNui';
 import useNuiEvent from '../../hooks/useNuiEvent';
 import { getItemUrl } from '../../helpers';
@@ -16,8 +16,14 @@ const SearchGear: React.FC<{ target: string }> = ({ target }) => {
     load();
   }, [load]);
 
-  // si su inventario cambia (alguien movió su mochila, etc.) se vuelve a revisar
-  useNuiEvent('refreshSlots', () => load());
+  // si su inventario cambia (alguien movió su mochila, etc.) se vuelve a revisar,
+  // agrupando varios cambios seguidos en una sola consulta al servidor
+  const timer = useRef<number | undefined>(undefined);
+  useNuiEvent('refreshSlots', () => {
+    window.clearTimeout(timer.current);
+    timer.current = window.setTimeout(load, 300);
+  });
+  useEffect(() => () => window.clearTimeout(timer.current), []);
 
   const takeOff = async (what: 'vest' | 'backpack') => {
     const res = await fetchNui<{ ok: boolean; error?: string }>('rustSearchTake', { target, what });

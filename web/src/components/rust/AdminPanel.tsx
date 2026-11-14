@@ -11,8 +11,6 @@ type Item = { name: string; label: string };
 type World = {
   benches: (Pos & { id: string; template: string; label: string; h: number })[];
   templates: Opt[];
-  boxTypes: Opt[];
-  boxes: (Pos & { id: string; label: string; owner: string; ownerName?: string })[];
 };
 type Players = { players: { id: number; name: string }[]; items: Item[]; blueprints: string[] };
 type Recipe = {
@@ -42,7 +40,6 @@ const KINDS: Record<string, string> = {
   recycle: 'Reciclaje',
   repair: 'Reparación',
   blueprint: 'Plano',
-  box: 'Caja',
   steal: 'Robo',
   admin: 'Admin',
 };
@@ -116,29 +113,6 @@ const WorldTab: React.FC<{ data: World; reload: () => void }> = ({ data, reload 
               Ir
             </button>
             <DeleteButton onConfirm={() => run('removeBench', { id: b.id })} />
-          </Row>
-        ))}
-      </div>
-
-      <div className="rust-section-title">
-        <span>Cajas</span>
-        <small>{data.boxes.length}</small>
-      </div>
-      <div className="rust-admin-add">
-        {data.boxTypes.map((t) => (
-          <button key={t.id} onClick={() => act('addBox', { item: t.id })}>
-            + {t.label} (a tu nombre)
-          </button>
-        ))}
-      </div>
-      <div className="rust-list">
-        {data.boxes.map((b) => (
-          <Row key={b.id} title={b.label} sub={`Dueño: ${b.ownerName || b.owner}${b.ownerName ? ' (conectado)' : ''} · ${fmt(b)}`}>
-            <button onClick={() => act('openBox', { id: b.id })}>Abrir</button>
-            <button className="alt" onClick={() => goto(b)}>
-              Ir
-            </button>
-            <DeleteButton onConfirm={() => run('removeBox', { id: b.id })} />
           </Row>
         ))}
       </div>
