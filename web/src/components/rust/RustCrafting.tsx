@@ -1,3 +1,5 @@
+import Icon from './Icon';
+import { faLock, faMinus, faPlus, faRecycle, faScroll, faStar, faWrench, faXmark } from '@fortawesome/free-solid-svg-icons';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import useNuiEvent from '../../hooks/useNuiEvent';
 import { fetchNui } from '../../utils/fetchNui';
@@ -140,9 +142,9 @@ const RustCrafting: React.FC<{ visible: boolean }> = ({ visible }) => {
 
   /** Motivo por el que no se puede craftear (o null si se puede) */
   const lockReason = (r: Recipe): string | null => {
-    if (r.blueprint && !r.learned) return '📜 Necesitas aprender el plano';
-    if (r.bench && !bench.ids[r.bench]) return `🔒 Requiere: ${r.benchLabel}`;
-    if (r.level && bench.level < r.level) return `🔒 Requiere mesa de nivel ${r.level}`;
+    if (r.blueprint && !r.learned) return 'Necesitas aprender el plano';
+    if (r.bench && !bench.ids[r.bench]) return `Requiere: ${r.benchLabel}`;
+    if (r.level && bench.level < r.level) return `Requiere mesa de nivel ${r.level}`;
     return null;
   };
   const canMake = (r: Recipe) => (lockReason(r) ? 0 : Math.min(100, maxCraftable(r)));
@@ -210,12 +212,12 @@ const RustCrafting: React.FC<{ visible: boolean }> = ({ visible }) => {
         ))}
         {bench.repair && (
           <button className={`special ${cat === 'repair' ? 'active' : ''}`} onClick={() => setCat('repair')}>
-            🔧 Reparar
+            <Icon icon={faWrench} /> Reparar
           </button>
         )}
         {bench.recycler && (
           <button className={`special ${cat === 'recycle' ? 'active' : ''}`} onClick={() => setCat('recycle')}>
-            ♻ Reciclar
+            <Icon icon={faRecycle} /> Reciclar
           </button>
         )}
       </div>
@@ -317,8 +319,8 @@ const RustCrafting: React.FC<{ visible: boolean }> = ({ visible }) => {
                     if (!reason) craft(r.id, 1);
                   }}
                 >
-                  {favs.includes(r.id) && <span className="star">★</span>}
-                  {reason && <span className="lock">{r.blueprint && !r.learned ? '📜' : '🔒'}</span>}
+                  {favs.includes(r.id) && <span className="star"><Icon icon={faStar} /></span>}
+                  {reason && <span className="lock"><Icon icon={r.blueprint && !r.learned ? faScroll : faLock} /></span>}
                 </div>
               );
             })}
@@ -341,7 +343,7 @@ const RustCrafting: React.FC<{ visible: boolean }> = ({ visible }) => {
                   onClick={() => toggleFav(recipe.id)}
                   title="Favorito"
                 >
-                  ★
+                  <Icon icon={faStar} />
                 </button>
               </div>
               <div className="rust-ing head">
@@ -363,13 +365,13 @@ const RustCrafting: React.FC<{ visible: boolean }> = ({ visible }) => {
               })}
               <div className="rust-actions">
                 <div className="rust-qty">
-                  <button onClick={() => setQty((q) => Math.max(1, q - 1))}>−</button>
+                  <button onClick={() => setQty((q) => Math.max(1, q - 1))}><Icon icon={faMinus} /></button>
                   <input
                     value={qty}
                     onChange={(e) => setQty(Math.max(1, Math.min(100, parseInt(e.target.value) || 1)))}
                     onKeyDown={(e) => e.stopPropagation()}
                   />
-                  <button onClick={() => setQty((q) => Math.min(100, q + 1))}>+</button>
+                  <button onClick={() => setQty((q) => Math.min(100, q + 1))}><Icon icon={faPlus} /></button>
                 </div>
                 <button className="rust-craft-btn" disabled={canMake(recipe) < qty} onClick={() => craft(recipe.id, qty)}>
                   Craftear · {fmtTime(recipe.time * qty)}
@@ -382,7 +384,11 @@ const RustCrafting: React.FC<{ visible: boolean }> = ({ visible }) => {
               >
                 Craftear todo ({canMake(recipe)})
               </button>
-              {lockReason(recipe) && <div className="rust-bench-req">{lockReason(recipe)}</div>}
+              {lockReason(recipe) && (
+                <div className="rust-bench-req">
+                  <Icon icon={recipe.blueprint && !recipe.learned ? faScroll : faLock} /> {lockReason(recipe)}
+                </div>
+              )}
             </div>
           )}
         </>
@@ -405,7 +411,7 @@ const RustCrafting: React.FC<{ visible: boolean }> = ({ visible }) => {
               title={`Cancelar ${j.label}`}
               onClick={() => cancel(j.id)}
             >
-              <span className="x">✕</span>
+              <span className="x"><Icon icon={faXmark} /></span>
               <span className="n">x{j.amount}</span>
               <span className="t">{fmtTime(left)}</span>
               {j.startedAt && <div className="bar" style={{ width: `${(1 - left / j.time) * 100}%` }} />}

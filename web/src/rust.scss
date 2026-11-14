@@ -1102,3 +1102,11 @@ input {
 .rust-bp-slot:not(.empty) {
   cursor: pointer;
 }
+
+// Iconos de Font Awesome (components/rust/Icon.tsx)
+.rust-icon {
+  width: 1em;
+  height: 1em;
+  vertical-align: -0.125em;
+  overflow: visible;
+}

@@ -1,3 +1,5 @@
+import Icon from './Icon';
+import { faMap, faBoxOpen, faArrowLeft, faXmark } from '@fortawesome/free-solid-svg-icons';
 import React, { useCallback, useEffect, useState } from 'react';
 import useNuiEvent from '../../hooks/useNuiEvent';
 import { fetchNui } from '../../utils/fetchNui';
@@ -92,7 +94,7 @@ const WorldTab: React.FC<{ data: World; reload: () => void }> = ({ data, reload 
   return (
     <>
       <button className={`rust-admin-wide ${map ? 'on' : ''}`} onClick={() => act('map', { on: !map }).then(() => setMap(!map))}>
-        🗺 {map ? 'Quitar del mapa' : 'Ver todo en el mapa (5 min)'}
+        <Icon icon={faMap} /> {map ? 'Quitar del mapa' : 'Ver todo en el mapa (5 min)'}
       </button>
 
       <div className="rust-section-title">
@@ -131,7 +133,7 @@ const WorldTab: React.FC<{ data: World; reload: () => void }> = ({ data, reload 
       </div>
       <div className="rust-list">
         {data.boxes.map((b) => (
-          <Row key={b.id} title={b.label} sub={`Dueño: ${b.ownerName || b.owner}${b.ownerName ? ' 🟢' : ''} · ${fmt(b)}`}>
+          <Row key={b.id} title={b.label} sub={`Dueño: ${b.ownerName || b.owner}${b.ownerName ? ' (conectado)' : ''} · ${fmt(b)}`}>
             <button onClick={() => act('openBox', { id: b.id })}>Abrir</button>
             <button className="alt" onClick={() => goto(b)}>
               Ir
@@ -171,7 +173,7 @@ const PlayersTab: React.FC<{ data: Players; notify: (r: Result, ok: string) => v
       {target !== '' && (
         <>
           <button className="rust-admin-wide" onClick={() => send('viewPlayer', {}, '')}>
-            🎒 Ver inventario de {data.players.find((p) => p.id === target)?.name || target}
+            <Icon icon={faBoxOpen} /> Ver inventario de {data.players.find((p) => p.id === target)?.name || target}
           </button>
 
           <div className="rust-section-title">
@@ -248,7 +250,7 @@ const RecipesTab: React.FC<{ data: Recipes; reload: () => void; notify: (r: Resu
         <div className="rust-section-title">
           <span>{edit.isNew ? 'Nueva receta' : edit.label || edit.name}</span>
           <button className="rust-link" onClick={() => setEdit(null)}>
-            ← Volver
+            <Icon icon={faArrowLeft} /> Volver
           </button>
         </div>
         <div className="rust-admin-grid">
@@ -323,7 +325,7 @@ const RecipesTab: React.FC<{ data: Recipes; reload: () => void; notify: (r: Resu
               onChange={(e) => setMats(mats.map((x, j) => (j === i ? { ...x, n: +e.target.value } : x)))}
             />
             <button className="danger" onClick={() => setMats(mats.filter((_, j) => j !== i))}>
-              ✕
+              <Icon icon={faXmark} />
             </button>
           </div>
         ))}
@@ -430,7 +432,7 @@ const AdminPanel: React.FC = () => {
     <div className="rust-admin">
       <div className="rust-admin-head">
         <span>Administrar inventario</span>
-        <button onClick={close}>✕</button>
+        <button onClick={close}><Icon icon={faXmark} /></button>
       </div>
       <div className="rust-right-tabs rust-admin-tabs">
         {TABS.map((t) => (

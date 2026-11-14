@@ -1,3 +1,5 @@
+import Icon from './Icon';
+import { faBoxOpen, faSuitcase } from '@fortawesome/free-solid-svg-icons';
 import React, { useMemo, useState } from 'react';
 import useNuiEvent from '../../hooks/useNuiEvent';
 import { Items } from '../../store/items';
@@ -86,7 +88,9 @@ const PlayerInventory: React.FC = () => {
       {extra.length > 0 && (
         <>
           <div className={`rust-bag-bar ${bagOpen ? 'open' : ''}`} onClick={toggleBag}>
-            <span>🎒 {bpLabel || 'Mochila'}</span>
+            <span>
+              <Icon icon={bagOpen ? faBoxOpen : faSuitcase} /> {bpLabel || 'Mochila'}
+            </span>
             <small>
               {used}/{extra.length} · {bagOpen ? 'click para cerrar' : 'click para abrir'}
             </small>
