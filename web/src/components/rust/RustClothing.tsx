@@ -7,7 +7,7 @@ import { selectLeftInventory } from '../../store/inventory';
 import { DragSource } from '../../typings';
 import { clothingIcon } from './clothingIcons';
 
-type ClothingSlot = { id: string; label: string; side: 'left' | 'right'; image?: string; worn: boolean };
+type ClothingSlot = { id: string; label: string; side: 'left' | 'right'; image?: string; worn: boolean; accepts: string };
 export type ClothDrag = DragSource & { kind: string };
 
 const ClothingSlotBox: React.FC<{ slot: ClothingSlot; busy: boolean; setBusy: (b: boolean) => void }> = ({
@@ -19,13 +19,13 @@ const ClothingSlotBox: React.FC<{ slot: ClothingSlot; busy: boolean; setBusy: (b
     () => ({
       accept: 'SLOT',
       collect: (m) => ({ isOver: m.isOver() }),
-      canDrop: (source) => source.inventory === 'player' && source.item.name === 'prenda',
+      canDrop: (source) => source.inventory === 'player' && source.item.name === slot.accepts,
       drop: (source) => {
         setBusy(true);
         fetchNui('rustClothesEquip', { slot: source.item.slot, kind: slot.id }).finally(() => setBusy(false));
       },
     }),
-    [slot.id]
+    [slot.id, slot.accepts]
   );
 
   const takeOff = () => {
