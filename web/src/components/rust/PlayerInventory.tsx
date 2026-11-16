@@ -1,13 +1,11 @@
 import Icon from './Icon';
 import { faBoxOpen, faSuitcase } from '@fortawesome/free-solid-svg-icons';
-import React, { useMemo, useState } from 'react';
+import React, { useState } from 'react';
 import useNuiEvent from '../../hooks/useNuiEvent';
 import { Items } from '../../store/items';
 import { useAppSelector } from '../../store';
 import { selectLeftInventory } from '../../store/inventory';
 import InventorySlot from '../inventory/InventorySlot';
-import WeightBar from '../utils/WeightBar';
-import { getTotalWeight } from '../../helpers';
 import { useDrop } from 'react-dnd';
 import { fetchNui } from '../../utils/fetchNui';
 import type { ClothDrag } from './RustClothing';
@@ -20,11 +18,6 @@ export const bagBase = { current: 50 };
 const PlayerInventory: React.FC = () => {
   const inv = useAppSelector(selectLeftInventory);
   const isBusy = useAppSelector((state) => state.inventory.isBusy);
-
-  const weight = useMemo(
-    () => (inv.maxWeight !== undefined ? Math.floor(getTotalWeight(inv.items) * 1000) / 1000 : 0),
-    [inv.maxWeight, inv.items]
-  );
 
   // Soltar una prenda (arrastrada desde las ranuras de ropa) en el inventario = quitártela.
   // Si cayó sobre un slot vacío, ese slot ya se encargó; si no, va al primer slot libre del inventario principal.
@@ -83,13 +76,11 @@ const PlayerInventory: React.FC = () => {
     >
       <div className="rust-section-title">
         <span>Inventario</span>
-        {inv.maxWeight ? (
-          <small>
-            {weight / 1000}/{inv.maxWeight / 1000}kg
-          </small>
-        ) : null}
+        {/* Sin peso: el límite son las ranuras */}
+        <small>
+          {main.filter((i) => i.name).length}/{main.length}
+        </small>
       </div>
-      <WeightBar percent={inv.maxWeight ? (weight / inv.maxWeight) * 100 : 0} />
       <div className="rust-grid rust-grid-main">{main.map(slot)}</div>
 
       {extra.length > 0 && (

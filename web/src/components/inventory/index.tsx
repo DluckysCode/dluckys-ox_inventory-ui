@@ -18,10 +18,15 @@ import RustCrafting from '../rust/RustCrafting';
 import RustShop from '../rust/RustShop';
 import CraftSoundPlayer from '../rust/CraftSoundPlayer';
 import AdminPanel from '../rust/AdminPanel';
+import Icon from '../rust/Icon';
+import { faArrowLeft, faArrowRight, faBoxOpen } from '@fortawesome/free-solid-svg-icons';
 
 const Inventory: React.FC = () => {
   const [inventoryVisible, setInventoryVisible] = useState(false);
+  // Panel derecho en la vista de inventario: crafteo rápido o contenedor
   const [rightTab, setRightTab] = useState<'craft' | 'container'>('craft');
+  // Vista: inventario o pantalla completa de crafteo
+  const [view, setView] = useState<'inv' | 'craft'>('inv');
   const dispatch = useAppDispatch();
   const rightInventory = useAppSelector(selectRightInventory);
 
@@ -39,6 +44,7 @@ const Inventory: React.FC = () => {
   }>('setupInventory', (data) => {
     dispatch(setupInventory(data));
     !inventoryVisible && setInventoryVisible(true);
+    setView('inv');
     // Si abriste un maletero, guantera, stash, etc. se muestra ese contenedor; si no, el crafteo
     if (data.rightInventory) setRightTab(data.rightInventory.type === 'newdrop' ? 'craft' : 'container');
   });
@@ -51,7 +57,10 @@ const Inventory: React.FC = () => {
 
   // Al tirar algo al suelo aparece el contenedor del suelo
   useEffect(() => {
-    if (rightInventory.type === 'drop') setRightTab('container');
+    if (rightInventory.type === 'drop') {
+      setRightTab('container');
+      setView('inv');
+    }
   }, [rightInventory.type, rightInventory.id]);
 
   // Solo tu inventario (o el suelo): ahí sale la ropa. En tiendas, carros, dumpsters, etc. no
@@ -61,36 +70,56 @@ const Inventory: React.FC = () => {
   return (
     <>
       <Fade in={inventoryVisible}>
-        <div className="rust-root">
+        <div className={`rust-root view-${view}`}>
+          {/* Pestañas grandes arriba */}
+          <div className="rust-topbar">
+            <button
+              className={view === 'inv' && rightTab === 'container' ? 'active' : ''}
+              onClick={() => {
+                setView('inv');
+                setRightTab(rightTab === 'container' ? 'craft' : 'container');
+              }}
+            >
+              <span>{containerLabel}</span>
+              <Icon icon={faBoxOpen} />
+            </button>
+            <button onClick={() => setView(view === 'craft' ? 'inv' : 'craft')}>
+              {view === 'craft' && <Icon icon={faArrowLeft} />}
+              <span>{view === 'craft' ? 'Inventario' : 'Crafteo'}</span>
+              {view === 'inv' && <Icon icon={faArrowRight} />}
+            </button>
+          </div>
+
           <div className="rust-col rust-left">
+            {/* Siempre montada (solo se oculta en la vista crafteo) para no perder las prendas que manda Lua */}
             {personal && <RustClothing />}
           </div>
 
           <div className="rust-col rust-center">
-            <InventoryControl />
+            {view === 'inv' && <InventoryControl />}
             <PlayerInventory />
           </div>
 
           <div className="rust-col rust-right">
-            <div className="rust-right-tabs">
-              <button className={rightTab === 'craft' ? 'active' : ''} onClick={() => setRightTab('craft')}>
-                Crafteo
-              </button>
-              <button className={rightTab === 'container' ? 'active' : ''} onClick={() => setRightTab('container')}>
-                {containerLabel}
-              </button>
-            </div>
-            <div className="rust-right-body">
-              {rightTab === 'craft' ? (
-                <RustCrafting visible={inventoryVisible} />
-              ) : (
-                <>
-                  {rightInventory.type === 'player' && <SearchGear target={rightInventory.id} />}
-                  {rightInventory.type === 'shop' ? <RustShop /> : <RightInventory />}
-                </>
-              )}
-            </div>
+            {view === 'inv' && (
+              <div className={`rust-right-body ${rightTab === 'craft' ? 'quick' : ''}`}>
+                {rightTab === 'craft' ? (
+                  <RustCrafting visible={inventoryVisible} mode="quick" />
+                ) : (
+                  <>
+                    {rightInventory.type === 'player' && <SearchGear target={rightInventory.id} />}
+                    {rightInventory.type === 'shop' ? <RustShop /> : <RightInventory />}
+                  </>
+                )}
+              </div>
+            )}
           </div>
+
+          {view === 'craft' && (
+            <div className="rust-craft-screen">
+              <RustCrafting visible={inventoryVisible} mode="full" />
+            </div>
+          )}
 
           <Tooltip />
           <InventoryContext />

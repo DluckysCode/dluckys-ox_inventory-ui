@@ -1,6 +1,6 @@
 import { getRarity, rarityVar } from '../../helpers/rarity';
 import Icon from './Icon';
-import { faLock, faMinus, faPlus, faRecycle, faScroll, faStar, faWrench, faXmark } from '@fortawesome/free-solid-svg-icons';
+import { faLock, faMinus, faPlus, faRecycle, faScroll, faStar, faStopwatch, faWrench, faXmark } from '@fortawesome/free-solid-svg-icons';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import useNuiEvent from '../../hooks/useNuiEvent';
 import { fetchNui } from '../../utils/fetchNui';
@@ -57,7 +57,7 @@ const fmtTime = (s: number) => {
 };
 const itemLabel = (slot: SlotWithItem) => slot.metadata?.label || Items[slot.name]?.label || slot.name;
 
-const RustCrafting: React.FC<{ visible: boolean }> = ({ visible }) => {
+const RustCrafting: React.FC<{ visible: boolean; mode?: 'full' | 'quick' }> = ({ visible, mode = 'full' }) => {
   const [rawRecipes, setRawRecipes] = useState<RawRecipe[]>([]);
   const playerItems = useAppSelector(selectLeftInventory).items;
   const [categories, setCategories] = useState<Category[]>([]);
@@ -200,15 +200,94 @@ const RustCrafting: React.FC<{ visible: boolean }> = ({ visible }) => {
   // ---------- Reciclar ----------
   const recyclable = Object.keys(recycleTable).filter((name) => (counts[name] || 0) > 0);
 
+  // Recetas por categoría (para el número al lado de cada categoría)
+  const catCount = (id: string) =>
+    id === 'favs' ? favs.length : id === 'all' ? recipes.length : recipes.filter((r) => r.category === id).length;
+
+  // Objetos en cola (se usan en el crafteo rápido y en el panel completo)
+  const jobs = queue.map((j) => {
+    const left = j.startedAt ? Math.max(0, j.time - (now - j.startedAt)) : j.time;
+    return (
+      <div
+        key={j.id}
+        className="rust-job"
+        style={{ backgroundImage: img(j.name) }}
+        title={`Cancelar ${j.label}`}
+        onClick={() => cancel(j.id)}
+      >
+        <span className="x"><Icon icon={faXmark} /></span>
+        <span className="n">x{j.amount}</span>
+        {/* Tiempo restante en una etiqueta verde (sin barra de progreso) */}
+        <span className={`rust-time ${j.startedAt ? 'run' : ''}`}>
+          <Icon icon={faStopwatch} /> {fmtTime(left)}
+        </span>
+      </div>
+    );
+  });
+
+  // ---------- Crafteo rápido: solo lo que puedes hacer ahora ----------
+  if (mode === 'quick') {
+    // Lo que se está crafteando sale encima del mismo icono (tiempo + cantidad)
+    const crafting: Record<string, { left: number; amount: number; run: boolean }> = {};
+    queue.forEach((j) => {
+      const left = j.startedAt ? Math.max(0, j.time - (now - j.startedAt)) : j.time;
+      const c = crafting[j.name];
+      if (c) c.amount += j.amount;
+      else crafting[j.name] = { left, amount: j.amount, run: !!j.startedAt };
+    });
+    // Se muestra si puedes craftearlo o si ya se está crafteando (aunque te quedes sin materiales)
+    const ready = recipes.filter((r) => canMake(r) > 0 || crafting[r.name]);
+    return (
+      <div className="rust-quick">
+        <div className="rust-section-title">
+          <span>Crafteo rápido</span>
+        </div>
+        {ready.length === 0 ? (
+          <div className="rust-quick-empty">
+            Aquí salen los objetos que puedes craftear con lo que llevas. Ahora mismo no tienes materiales para
+            craftear nada.
+          </div>
+        ) : (
+          <div className="rust-quick-grid">
+            {ready.map((r) => {
+              const c = crafting[r.name];
+              return (
+                <div
+                  key={r.id}
+                  className="rust-quick-item"
+                  style={{ backgroundImage: img(r.name) }}
+                  title={`${r.label} (click = craftear 1)`}
+                  onClick={() => canMake(r) > 0 && craft(r.id, 1)}
+                >
+                  {c && (
+                    <>
+                      <span className={`rust-time ${c.run ? 'run' : ''}`}>
+                        <Icon icon={faStopwatch} /> {fmtTime(c.left)}
+                      </span>
+                      <span className="n">x{c.amount}</span>
+                    </>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        )}
+        {msg && <div className="rust-msg">{msg}</div>}
+      </div>
+    );
+  }
+
   return (
-    <div className="rust-craft">
+    <div className="rust-craft full">
       <div className="rust-tabs">
         <button className={cat === 'favs' ? 'active' : ''} onClick={() => setCat('favs')}>
-          Favoritos
+          <span>Favoritos</span>
+          <small>{catCount('favs') || ''}</small>
         </button>
         {categories.map((c) => (
           <button key={c.id} className={cat === c.id ? 'active' : ''} onClick={() => setCat(c.id)}>
-            {c.label}
+            <span>{c.label}</span>
+            <small>{catCount(c.id) || ''}</small>
           </button>
         ))}
         {bench.repair && (
@@ -398,28 +477,12 @@ const RustCrafting: React.FC<{ visible: boolean }> = ({ visible }) => {
 
       {msg && <div className="rust-msg">{msg}</div>}
 
-      <div className="rust-section-title">
+      <div className="rust-queue-wrap">
+      <div className="rust-section-title rust-queue-title">
         <span>Cola de crafteo</span>
         {queue.length > 0 && <small>Tiempo total: {fmtTime(totalLeft)}</small>}
       </div>
-      <div className="rust-queue">
-        {queue.map((j) => {
-          const left = j.startedAt ? Math.max(0, j.time - (now - j.startedAt)) : j.time;
-          return (
-            <div
-              key={j.id}
-              className="rust-job"
-              style={{ backgroundImage: img(j.name) }}
-              title={`Cancelar ${j.label}`}
-              onClick={() => cancel(j.id)}
-            >
-              <span className="x"><Icon icon={faXmark} /></span>
-              <span className="n">x{j.amount}</span>
-              <span className="t">{fmtTime(left)}</span>
-              {j.startedAt && <div className="bar" style={{ width: `${(1 - left / j.time) * 100}%` }} />}
-            </div>
-          );
-        })}
+      <div className="rust-queue">{jobs}</div>
       </div>
     </div>
   );
