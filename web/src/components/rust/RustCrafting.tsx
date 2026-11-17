@@ -1,6 +1,6 @@
 import { getRarity, rarityVar } from '../../helpers/rarity';
 import Icon from './Icon';
-import { faLock, faMinus, faPlus, faRecycle, faScroll, faStar, faStopwatch, faWrench, faXmark } from '@fortawesome/free-solid-svg-icons';
+import { faLock, faMinus, faPlus, faRecycle, faStar, faStopwatch, faWrench, faXmark } from '@fortawesome/free-solid-svg-icons';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import useNuiEvent from '../../hooks/useNuiEvent';
 import { fetchNui } from '../../utils/fetchNui';
@@ -55,8 +55,8 @@ const fmtTime = (s: number) => {
   const m = Math.floor(s / 60);
   return m > 0 ? `${m}m ${String(s % 60).padStart(2, '0')}s` : `${s}s`;
 };
-const itemLabel = (slot: SlotWithItem) => slot.metadata?.label || Items[slot.name]?.label || slot.name;
 
+// Pantalla de crafteo completa (mesa de trabajo, ox_target -> Craftear) o crafteo rápido (inventario: solo lo básico)
 const RustCrafting: React.FC<{ visible: boolean; mode?: 'full' | 'quick' }> = ({ visible, mode = 'full' }) => {
   const [rawRecipes, setRawRecipes] = useState<RawRecipe[]>([]);
   const playerItems = useAppSelector(selectLeftInventory).items;
@@ -71,10 +71,8 @@ const RustCrafting: React.FC<{ visible: boolean; mode?: 'full' | 'quick' }> = ({
   const [offset, setOffset] = useState(0);
   const [, setTick] = useState(0);
   const [bench, setBench] = useState<BenchState>({ ids: {}, level: 0, repair: false, recycler: false });
-  const [repairCosts, setRepairCosts] = useState<{ default: Mat[]; items: Record<string, Mat[]> }>({
-    default: [],
-    items: {},
-  });
+  // false hasta que llegan las recetas: evita que el crafteo rápido muestre "no tienes materiales" un instante
+  const [loaded, setLoaded] = useState(false);
   const [recycleTable, setRecycleTable] = useState<Record<string, Mat[]>>({});
   const [recycleQty, setRecycleQty] = useState<Record<string, number>>({});
 
@@ -83,7 +81,6 @@ const RustCrafting: React.FC<{ visible: boolean; mode?: 'full' | 'quick' }> = ({
       categories: Category[];
       recipes: RawRecipe[];
       bench?: BenchState;
-      repair?: { default: Mat[]; items: Record<string, Mat[]> };
       recycle?: Record<string, Mat[]>;
       error?: string;
     }>('rustcraftGetRecipes');
@@ -92,7 +89,7 @@ const RustCrafting: React.FC<{ visible: boolean; mode?: 'full' | 'quick' }> = ({
       return;
     }
     if (data.bench) setBench(data.bench);
-    if (data.repair) setRepairCosts({ default: data.repair.default || [], items: data.repair.items || {} });
+    setLoaded(true);
     setRecycleTable(data.recycle || {});
     setCategories(data.categories || []);
     setRawRecipes(data.recipes || []);
@@ -109,7 +106,7 @@ const RustCrafting: React.FC<{ visible: boolean; mode?: 'full' | 'quick' }> = ({
 
   // Si te alejas de la mesa, sal de las pestañas de reparar/reciclar
   useEffect(() => {
-    if ((cat === 'repair' && !bench.repair) || (cat === 'recycle' && !bench.recycler)) setCat('favs');
+    if (cat === 'recycle' && !bench.recycler) setCat('favs');
   }, [bench, cat]);
 
   // Los materiales se cuentan aquí con el inventario que ya tiene la interfaz
@@ -121,12 +118,15 @@ const RustCrafting: React.FC<{ visible: boolean; mode?: 'full' | 'quick' }> = ({
     return c;
   }, [playerItems]);
 
+  // Como en Rust: solo sale lo que ya desbloqueaste (y lo que no necesita plano)
   const recipes = useMemo<Recipe[]>(
     () =>
-      rawRecipes.map((r) => ({
-        ...r,
-        ingredients: r.ingredients.map((i) => ({ ...i, have: counts[i.name] || 0 })),
-      })),
+      rawRecipes
+        .filter((r) => !r.blueprint || r.learned)
+        .map((r) => ({
+          ...r,
+          ingredients: r.ingredients.map((i) => ({ ...i, have: counts[i.name] || 0 })),
+        })),
     [rawRecipes, counts]
   );
 
@@ -143,7 +143,6 @@ const RustCrafting: React.FC<{ visible: boolean; mode?: 'full' | 'quick' }> = ({
 
   /** Motivo por el que no se puede craftear (o null si se puede) */
   const lockReason = (r: Recipe): string | null => {
-    if (r.blueprint && !r.learned) return 'Necesitas aprender el plano';
     if (r.bench && !bench.ids[r.bench]) return `Requiere: ${r.benchLabel}`;
     if (r.level && bench.level < r.level) return `Requiere mesa de nivel ${r.level}`;
     return null;
@@ -159,7 +158,8 @@ const RustCrafting: React.FC<{ visible: boolean; mode?: 'full' | 'quick' }> = ({
     });
   }, [recipes, cat, search, favs]);
 
-  const recipe = recipes.find((r) => r.id === sel);
+  // Si la seleccionada no está en la lista (p. ej. sin desbloquear), se muestra la primera
+  const recipe = recipes.find((r) => r.id === sel) ?? list[0];
   const now = Date.now() / 1000 + offset;
 
   const totalLeft = queue.reduce((acc, j, i) => {
@@ -181,22 +181,6 @@ const RustCrafting: React.FC<{ visible: boolean; mode?: 'full' | 'quick' }> = ({
   const craft = (id: number, amount: number) => run('rustcraftCraft', { id, amount });
   const cancel = (id: number) => fetchNui('rustcraftCancel', { id });
 
-  // ---------- Reparar ----------
-  const repairable = playerItems.filter(
-    (s): s is SlotWithItem =>
-      isSlotWithItem(s) &&
-      typeof s.metadata?.durability === 'number' &&
-      s.metadata.durability < 100 &&
-      (repairCosts.items[s.name] || repairCosts.default).length > 0
-  );
-  const repairCost = (s: SlotWithItem) => {
-    const missing = (100 - (s.metadata?.durability ?? 100)) / 100;
-    return (repairCosts.items[s.name] || repairCosts.default).map((m) => {
-      const amount = Math.max(1, Math.ceil(m.amount * missing));
-      return { ...m, amount, have: counts[m.name] || 0 };
-    });
-  };
-
   // ---------- Reciclar ----------
   const recyclable = Object.keys(recycleTable).filter((name) => (counts[name] || 0) > 0);
 
@@ -204,7 +188,7 @@ const RustCrafting: React.FC<{ visible: boolean; mode?: 'full' | 'quick' }> = ({
   const catCount = (id: string) =>
     id === 'favs' ? favs.length : id === 'all' ? recipes.length : recipes.filter((r) => r.category === id).length;
 
-  // Objetos en cola (se usan en el crafteo rápido y en el panel completo)
+  // Objetos en cola
   const jobs = queue.map((j) => {
     const left = j.startedAt ? Math.max(0, j.time - (now - j.startedAt)) : j.time;
     return (
@@ -225,7 +209,7 @@ const RustCrafting: React.FC<{ visible: boolean; mode?: 'full' | 'quick' }> = ({
     );
   });
 
-  // ---------- Crafteo rápido: solo lo que puedes hacer ahora ----------
+  // ---------- Crafteo rápido: solo lo básico (recetas sin mesa ni plano) ----------
   if (mode === 'quick') {
     // Lo que se está crafteando sale encima del mismo icono (tiempo + cantidad)
     const crafting: Record<string, { left: number; amount: number; run: boolean }> = {};
@@ -235,17 +219,17 @@ const RustCrafting: React.FC<{ visible: boolean; mode?: 'full' | 'quick' }> = ({
       if (c) c.amount += j.amount;
       else crafting[j.name] = { left, amount: j.amount, run: !!j.startedAt };
     });
+    const basic = recipes.filter((r) => !r.level && !r.bench && !r.blueprint);
     // Se muestra si puedes craftearlo o si ya se está crafteando (aunque te quedes sin materiales)
-    const ready = recipes.filter((r) => canMake(r) > 0 || crafting[r.name]);
+    const ready = basic.filter((r) => canMake(r) > 0 || crafting[r.name]);
     return (
       <div className="rust-quick">
         <div className="rust-section-title">
           <span>Crafteo rápido</span>
         </div>
-        {ready.length === 0 ? (
+        {!loaded ? null : ready.length === 0 ? (
           <div className="rust-quick-empty">
-            Aquí salen los objetos que puedes craftear con lo que llevas. Ahora mismo no tienes materiales para
-            craftear nada.
+            Lo básico (vendas, cuchillo…) se craftea aquí. Lo demás, en una mesa de trabajo.
           </div>
         ) : (
           <div className="rust-quick-grid">
@@ -280,6 +264,10 @@ const RustCrafting: React.FC<{ visible: boolean; mode?: 'full' | 'quick' }> = ({
   return (
     <div className="rust-craft full">
       <div className="rust-tabs">
+        {/* Mesa que tienes cerca: desbloquea recetas hasta su nivel */}
+        <div className={`rust-bench-level ${bench.level ? 'on' : ''}`}>
+          <Icon icon={faWrench} /> {bench.level ? `Mesa nivel ${bench.level}` : 'Sin mesa cerca'}
+        </div>
         <button className={cat === 'favs' ? 'active' : ''} onClick={() => setCat('favs')}>
           <span>Favoritos</span>
           <small>{catCount('favs') || ''}</small>
@@ -290,48 +278,12 @@ const RustCrafting: React.FC<{ visible: boolean; mode?: 'full' | 'quick' }> = ({
             <small>{catCount(c.id) || ''}</small>
           </button>
         ))}
-        {bench.repair && (
-          <button className={`special ${cat === 'repair' ? 'active' : ''}`} onClick={() => setCat('repair')}>
-            <Icon icon={faWrench} /> Reparar
-          </button>
-        )}
         {bench.recycler && (
           <button className={`special ${cat === 'recycle' ? 'active' : ''}`} onClick={() => setCat('recycle')}>
             <Icon icon={faRecycle} /> Reciclar
           </button>
         )}
       </div>
-
-      {cat === 'repair' && (
-        <div className="rust-list">
-          {repairable.length === 0 && <div className="rust-empty">No tienes nada que reparar.</div>}
-          {repairable.map((s) => {
-            const cost = repairCost(s);
-            const can = cost.every((c) => c.have >= c.amount);
-            return (
-              <div className="rust-row" key={s.slot}>
-                <span className="ico" style={{ backgroundImage: img(s) }} />
-                <div className="info">
-                  <b>{itemLabel(s)}</b>
-                  <div className="dur">
-                    <div style={{ width: `${s.metadata?.durability}%` }} />
-                  </div>
-                  <small>
-                    {cost.map((c) => (
-                      <span key={c.name} className={c.have >= c.amount ? 'ok' : 'bad'}>
-                        {c.amount} {c.label}{' '}
-                      </span>
-                    ))}
-                  </small>
-                </div>
-                <button disabled={!can} onClick={() => run('rustcraftRepair', { slot: s.slot })}>
-                  Reparar
-                </button>
-              </div>
-            );
-          })}
-        </div>
-      )}
 
       {cat === 'recycle' && (
         <div className="rust-list">
@@ -371,7 +323,7 @@ const RustCrafting: React.FC<{ visible: boolean; mode?: 'full' | 'quick' }> = ({
         </div>
       )}
 
-      {cat !== 'repair' && cat !== 'recycle' && (
+      {cat !== 'recycle' && (
         <>
           <input
             className="rust-search"
@@ -401,7 +353,8 @@ const RustCrafting: React.FC<{ visible: boolean; mode?: 'full' | 'quick' }> = ({
                   }}
                 >
                   {favs.includes(r.id) && <span className="star"><Icon icon={faStar} /></span>}
-                  {reason && <span className="lock"><Icon icon={r.blueprint && !r.learned ? faScroll : faLock} /></span>}
+                  {reason && <span className="lock"><Icon icon={faLock} /></span>}
+                  {r.level ? <span className={`lvl ${bench.level >= r.level ? 'ok' : ''}`}>Nv {r.level}</span> : null}
                 </div>
               );
             })}
@@ -467,7 +420,7 @@ const RustCrafting: React.FC<{ visible: boolean; mode?: 'full' | 'quick' }> = ({
               </button>
               {lockReason(recipe) && (
                 <div className="rust-bench-req">
-                  <Icon icon={recipe.blueprint && !recipe.learned ? faScroll : faLock} /> {lockReason(recipe)}
+                  <Icon icon={faLock} /> {lockReason(recipe)}
                 </div>
               )}
             </div>

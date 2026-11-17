@@ -127,16 +127,6 @@ body.inv-dragging {
   }
 }
 
-.inventory-wrapper {
-  display: flex;
-  flex-direction: row;
-  justify-content: center;
-  align-items: center;
-  height: 100%;
-
-  gap: 20px;
-}
-
 .inventory-control {
   display: flex;
 
@@ -374,29 +364,6 @@ body.inv-dragging {
   }
 }
 
-// hotbar
-.hotbar-container {
-  display: flex;
-  align-items: center;
-  gap: 2px;
-  justify-content: center;
-  width: 100%;
-  position: absolute;
-  bottom: 2vh;
-}
-
-.hotbar-item-slot {
-  @extend .inventory-slot;
-  width: $gridSize;
-  height: $gridSize;
-}
-
-.hotbar-slot-header-wrapper {
-  display: flex;
-  flex-direction: row;
-  justify-content: space-between;
-}
-
 // item notifications
 
 .item-notification-container {
@@ -410,28 +377,6 @@ body.inv-dragging {
   width: 100%;
   margin-left: calc(50% - calc($gridSize/2));
   transform: translate(-50%);
-}
-
-.item-notification-action-box {
-  width: 100%;
-  color: $textColor;
-  background-color: $secondaryColor;
-  text-transform: uppercase;
-  text-align: center;
-  border-top-left-radius: 0.25vh;
-  border-top-right-radius: 0.25vh;
-  font-family: $mainFont;
-  p {
-    font-size: 11px;
-    padding: 2px;
-    font-weight: 600;
-  }
-}
-
-.item-notification-item-box {
-  @extend .inventory-slot;
-  height: $gridSize;
-  width: $gridSize;
 }
 
 .durability-bar {
@@ -464,22 +409,4 @@ body.inv-dragging {
 .transition-fade-exit-active {
   opacity: 0;
   transition: opacity 200ms;
-}
-
-.transition-slide-up-enter {
-  transform: translateY(200px);
-}
-
-.transition-slide-up-enter-active {
-  transform: translateY(0px);
-  transition: all 200ms;
-}
-
-.transition-slide-up-exit {
-  transform: translateY(0px);
-}
-
-.transition-slide-up-exit-active {
-  transform: translateY(200px);
-  transition: all 200ms;
 }

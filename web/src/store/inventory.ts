@@ -99,6 +99,5 @@ export const {
 export const selectLeftInventory = (state: RootState) => state.inventory.leftInventory;
 export const selectRightInventory = (state: RootState) => state.inventory.rightInventory;
 export const selectItemAmount = (state: RootState) => state.inventory.itemAmount;
-export const selectIsBusy = (state: RootState) => state.inventory.isBusy;
 
 export default inventorySlice.reducer;

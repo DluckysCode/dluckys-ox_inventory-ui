@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { useDrag, useDrop } from 'react-dnd';
 import useNuiEvent from '../../hooks/useNuiEvent';
 import { fetchNui } from '../../utils/fetchNui';
@@ -6,6 +6,8 @@ import { useAppSelector } from '../../store';
 import { selectLeftInventory } from '../../store/inventory';
 import { DragSource } from '../../typings';
 import { clothingIcon } from './clothingIcons';
+import InventorySlot from '../inventory/InventorySlot';
+import { bagBase } from './PlayerInventory';
 
 type ClothingSlot = { id: string; label: string; side: 'left' | 'right'; image?: string; worn: boolean; accepts: string };
 export type ClothDrag = DragSource & { kind: string };
@@ -75,22 +77,48 @@ const RustClothing: React.FC = () => {
   const left = slots.filter((s) => s.side === 'left');
   const right = slots.filter((s) => s.side !== 'left');
 
+  // Ranura Mochila = último slot normal del jugador (lo manda Lua). Va con la ropa porque se lleva puesta
+  const [base, setBase] = useState(bagBase.current);
+  useNuiEvent<{ base: number }>('rustBackpack', (d) => setBase(d.base));
+  const bpSlot = player.items.find((i) => i.slot === base);
+
+  // Mide dónde queda el hueco del personaje y se lo dice a la cámara (Lua), para que caiga justo entre las prendas
+  const pedRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    const el = pedRef.current;
+    if (!el || !slots.length) return;
+    const r = el.getBoundingClientRect();
+    if (r.width > 0) fetchNui('rustCamTarget', { x: (r.left + r.width / 2) / window.innerWidth });
+  }, [slots.length]);
+
   return (
+    // Nombre arriba; prendas en dos columnas con el personaje en medio (cámara del juego); Mochila al final
     <div className="rust-character">
       <div className="rust-name">{player.label}</div>
-      <div className="rust-name-sub">Equipo · click en una prenda para quitártela</div>
       <div className="rust-paperdoll">
         <div className="rust-cloth-col">
           {left.map((s) => (
             <ClothingSlotBox key={s.id} slot={s} busy={busy} setBusy={setBusy} />
           ))}
         </div>
-        {/* espacio libre: aquí se ve tu personaje (cámara del juego) */}
-        <div className="rust-ped-space" />
+        <div className="rust-ped-space" ref={pedRef} />
         <div className="rust-cloth-col">
           {right.map((s) => (
             <ClothingSlotBox key={s.id} slot={s} busy={busy} setBusy={setBusy} />
           ))}
+          {bpSlot && (
+            <div className="rust-cloth">
+              <div className={`rust-bp-slot ${bpSlot.name ? '' : 'empty'}`}>
+                <InventorySlot
+                  item={bpSlot}
+                  inventoryType={player.type}
+                  inventoryGroups={player.groups}
+                  inventoryId={player.id}
+                />
+              </div>
+              <span>Mochila</span>
+            </div>
+          )}
         </div>
       </div>
     </div>

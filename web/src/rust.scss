@@ -30,7 +30,7 @@ input {
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
   gap: 2.5vh;
-  padding: 12vh 3vw 5vh;
+  padding: 5vh 3vw;
   box-sizing: border-box;
   background: linear-gradient(
     to right,
@@ -45,48 +45,10 @@ input {
   button:focus-visible {
     outline: none;
   }
-}
 
-.rust-col {
-  display: flex;
-  flex-direction: column;
-  min-height: 0;
-}
-.rust-left {
-  justify-content: flex-start;
-  align-items: flex-start;
-}
-.rust-center {
-  justify-content: flex-end;
-  gap: 1.2vh;
-}
-.rust-right {
-  justify-content: flex-end;
-  align-items: flex-end;
-}
-
-.rust-section-title {
-  display: flex;
-  justify-content: space-between;
-  align-items: baseline;
-  text-transform: uppercase;
-  font-weight: 700;
-  font-size: 2.6vh;
-  letter-spacing: 0.02em;
-  margin-bottom: 0.6vh;
-  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.6);
-
-  small {
-    font-size: 1.25vh;
-    color: $muted;
-    letter-spacing: 0.04em;
-  }
-}
-
-// ---------- Slots (comunes) ----------
-// Estilo Rust: solo icono grande + cantidad abajo a la derecha.
-// Nombre, peso y descripción se ven en el tooltip al pasar el mouse.
-.rust-root {
+  // ---------- Slots (comunes) ----------
+  // Estilo Rust: solo icono grande + cantidad abajo a la derecha.
+  // Nombre, peso y descripción se ven en el tooltip al pasar el mouse.
   .inventory-slot {
     background-color: $slot;
     background-size: 74%;
@@ -133,6 +95,42 @@ input {
   }
 }
 
+.rust-col {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+// Izquierda: personaje y ropa · Centro: nombre arriba, inventario abajo · Derecha: suelo abajo
+.rust-left {
+  justify-content: center;
+  align-items: center; // la ropa queda centrada en la columna; la cámara apunta al hueco entre las prendas
+}
+.rust-center {
+  justify-content: flex-end;
+}
+.rust-right {
+  justify-content: flex-end;
+  align-items: flex-end;
+}
+
+.rust-section-title {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  text-transform: uppercase;
+  font-weight: 700;
+  font-size: 2.6vh;
+  letter-spacing: 0.02em;
+  margin-bottom: 0.6vh;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.6);
+
+  small {
+    font-size: 1.25vh;
+    color: $muted;
+    letter-spacing: 0.04em;
+  }
+}
+
 .rust-grid {
   display: grid;
   grid-template-columns: repeat(6, $slotSize);
@@ -144,52 +142,48 @@ input {
   overflow-y: auto;
   margin-top: 0.8vh;
 }
-.rust-hotbar-title {
-  margin-top: 1.6vh;
+// Nombre del jugador arriba de la columna central (el inventario queda abajo)
+.rust-player-head {
+  margin-bottom: auto;
 }
+// 6 ranuras, igual que el inventario y el suelo
 .rust-grid-hotbar {
   grid-template-columns: repeat(6, $slotSize);
+  margin-top: 1vh; // pegada debajo del inventario, sin título
 
   .inventory-slot {
     box-shadow: inset 0.35vh 0 0 $greenHi;
   }
 }
 // Barra de la mochila (cerrada por defecto; click abre/cierra)
-.rust-bag-bar {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-top: 1.2vh;
-  padding: 0.8vh 1vh;
-  background: rgba(92, 78, 56, 0.8);
-  box-shadow: inset 3px 0 0 #d9822b;
-  font-size: 1.6vh;
-  font-weight: 700;
-  text-transform: uppercase;
-  cursor: pointer;
-  user-select: none;
-
-  small {
-    font-size: 1.15vh;
-    color: $muted;
-  }
-  &:hover,
-  &.open {
-    background: rgba(120, 100, 70, 0.9);
-  }
+// Panel derecho (mochila + crafteo rápido) a la MISMA altura que el inventario: su título en línea
+// con "INVENTARIO". Va dentro de la sección del inventario y se empuja hasta el borde derecho:
+// el inventario está centrado (mitad de su ancho = 26.93vh) y el borde de la pantalla es 100vw - 3vw.
+$invHalf: calc((6 * #{$slotSize} + 5 * #{$gap}) / 2);
+.rust-inv-section,
+.rust-ground {
+  position: relative; // el panel derecho (mochila / crafteo rápido) se ancla a estas secciones
 }
+.rust-inv-aside {
+  position: absolute;
+  top: 0;
+  right: calc(#{$invHalf} - 47vw);
+  width: calc(6 * #{$slotSize} + 5 * #{$gap});
+}
+// Mochila puesta: ranuras con tono marrón
 .rust-grid-backpack {
   max-height: calc(2 * #{$slotSize} + #{$gap});
   overflow-y: auto;
-  margin-top: 0.4vh;
 
   .inventory-slot {
     background-color: rgba(92, 78, 56, 0.72);
   }
 }
-// Slot Mochila (último de la barra rápida): borde naranja y silueta cuando está vacío
+// Ranura Mochila (con la ropa): mismo tamaño que las prendas, borde naranja y silueta si está vacía
 .rust-bp-slot {
   position: relative;
+  width: 7.4vh;
+  height: 7.4vh;
 
   .inventory-slot {
     width: 100%;
@@ -210,6 +204,16 @@ input {
 }
 
 // ---------- Controles (cantidad / usar / dar) ----------
+// Título del inventario con los botones en la misma línea: INVENTARIO [0][USE][GIVE][CLOSE] ... 8/24
+.rust-inv-title {
+  align-items: center;
+  gap: 1.2vh;
+
+  small {
+    margin-left: auto;
+  }
+}
+// Botones (cantidad / usar / dar / cerrar), compactos para caber junto al título
 .rust-center .inventory-control {
   .inventory-control-wrapper {
     flex-direction: row;
@@ -222,8 +226,8 @@ input {
     color: $text;
     font-weight: 700;
     letter-spacing: 0.06em;
-    padding: 1vh 1.2vh;
-    font-size: 1.4vh;
+    padding: 0.6vh 1vh;
+    font-size: 1.3vh;
     width: auto;
     flex: 1;
   }
@@ -236,23 +240,17 @@ input {
 }
 
 // ---------- Personaje / ropa ----------
+// Columna izquierda: prendas en dos columnas con el personaje (cámara) en medio, centrado en la columna
+// El nombre arriba del todo (sin tapar al personaje) y la ropa centrada en el resto de la columna
 .rust-character {
   display: flex;
   flex-direction: column;
-  align-items: flex-start;
-}
-.rust-name {
-  font-size: 2.8vh;
-  font-weight: 700;
-  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.7);
-}
-.rust-name-sub {
-  font-size: 1.3vh;
-  color: $text;
-  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.9);
-  text-transform: uppercase;
-  letter-spacing: 0.1em;
-  margin-bottom: 1.6vh;
+  align-items: center;
+  height: 100%;
+
+  > .rust-paperdoll {
+    margin: auto 0;
+  }
 }
 .rust-paperdoll {
   display: flex;
@@ -263,6 +261,11 @@ input {
   display: flex;
   flex-direction: column;
   gap: 1vh;
+}
+.rust-name {
+  font-size: 2.8vh;
+  font-weight: 700;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.7);
 }
 .rust-cloth {
   display: flex;
@@ -309,7 +312,7 @@ input {
   outline-offset: 0.4vh;
 }
 .rust-ped-space {
-  width: 34vh;
+  width: 30vh;
 }
 
 // ---------- Columna derecha ----------
@@ -716,6 +719,36 @@ input {
   top: 2px;
   font-size: 1.4vh;
 }
+// Nivel de mesa que pide la receta (rojo si tu mesa no llega, gris si sí)
+.rust-recipe .lvl {
+  position: absolute;
+  left: 0.4vh;
+  bottom: 0.3vh;
+  padding: 0 0.4vh;
+  background: rgba(192, 71, 47, 0.85);
+  color: #fff;
+  font-size: 1.1vh;
+  font-weight: 700;
+  &.ok {
+    background: rgba(71, 70, 63, 0.9);
+  }
+}
+// Mesa cercana (arriba de las categorías)
+.rust-bench-level {
+  display: flex;
+  align-items: center;
+  gap: 0.8vh;
+  margin: 0 0.6vh 0.6vh;
+  padding: 1vh 1.4vh;
+  background: rgba(0, 0, 0, 0.3);
+  color: $muted;
+  font-size: 1.6vh;
+  font-weight: 700;
+  text-transform: uppercase;
+  &.on {
+    color: $greenHi;
+  }
+}
 .rust-msg {
   color: $red;
   font-size: 1.3vh;
@@ -752,7 +785,7 @@ input {
   }
 }
 // Crafteando: etiqueta de tiempo arriba a la derecha y cantidad abajo
-// (en la cola del panel y encima del icono en el crafteo rápido)
+// (en la cola de la mesa y encima del icono en el crafteo rápido)
 .rust-job,
 .rust-quick-item {
   .n {
@@ -1267,65 +1300,45 @@ input {
 }
 
 // =====================================================================
-// Distribución nueva: pestañas grandes arriba, inventario abajo al centro,
-// crafteo rápido a la derecha y pantalla de crafteo completa aparte
+// Distribución: inventario a la izquierda, ropa al centro, suelo a la derecha.
+// El crafteo completo se abre aparte desde la mesa
 // =====================================================================
-.rust-topbar {
-  position: absolute;
-  top: 0;
-  left: 50%;
-  transform: translateX(-50%);
-  display: flex;
-  gap: 1.4vh;
-  z-index: 5;
+// Suelo (columna derecha): sin la cabecera de ox (nombre + peso); el título "Suelo" es propio
+// Suelo debajo del inventario (columna central)
+.rust-ground {
+  margin-top: 1.2vh;
 
-  button {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 2vh;
-    width: 28vh;
-    height: 6.4vh;
-    border: none;
-    background: $panel;
-    color: $text;
-    font-size: 3vh;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 0.02em;
-    cursor: pointer;
-
-    svg {
-      font-size: 2.6vh;
-      opacity: 0.85;
+  .inventory-grid-wrapper {
+    gap: 0;
+    > div:first-child {
+      display: none;
     }
-    &:hover,
-    &.active {
-      background: $panelHi;
-    }
-    &:active {
-      transform: none;
-    }
+  }
+  // 24 ranuras (6 x 4) igual que el inventario; se ven 2 filas y el resto con la rueda del ratón
+  .inventory-grid-container {
+    grid-template-columns: repeat(6, $slotSize);
+    grid-auto-rows: $slotSize;
+    gap: $gap;
+    height: auto;
+    max-height: calc(2 * #{$slotSize} + #{$gap});
+    overflow-y: auto;
   }
 }
 
-// ---------- Crafteo rápido (columna derecha) ----------
-// Pegado al inventario, a media altura, iconos sueltos sin cuadro
-.rust-right-body.quick {
-  align-self: flex-start;
-  align-items: flex-start;
-  margin-bottom: 18vh;
+// ---------- Crafteo rápido (columna derecha): solo lo básico, iconos sueltos ----------
+.rust-quick {
+  width: 100%;
 }
 .rust-quick-grid {
   display: grid;
-  grid-template-columns: repeat(6, 8.4vh);
-  gap: 1.4vh;
+  grid-template-columns: repeat(6, $slotSize);
+  gap: $gap;
 }
 .rust-quick-item {
   position: relative;
-  width: 8.4vh;
-  height: 8.4vh;
-  background: center / 88% no-repeat;
+  width: $slotSize;
+  height: $slotSize;
+  background: center / 85% no-repeat;
   cursor: pointer;
   filter: drop-shadow(0 2px 3px rgba(0, 0, 0, 0.6));
   transition: transform 0.1s;
@@ -1335,31 +1348,440 @@ input {
   }
 }
 .rust-quick-empty {
-  width: 58vh;
-  box-sizing: border-box;
   background: $panel;
-  padding: 1.6vh 2vh;
-  font-size: 1.8vh;
+  padding: 1.4vh 1.6vh;
+  font-size: 1.7vh;
   line-height: 1.4;
   color: $text;
 }
 
-// ---------- Vista crafteo completa ----------
-.rust-root.view-craft {
+// ---------- Mesa de reparación y contenedores ----------
+// Sin panel de ropa: inventario y mesa (o contenedor) juntos, centrados en la pantalla
+.rust-root.view-repair,
+.rust-root.centered {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 3vh;
+  padding-top: 5vh;
+
   .rust-left {
-    visibility: hidden;
+    display: none; // la ropa sigue montada (no pierde sus datos), solo no se ve
   }
-  // Del inventario solo queda la barra rápida
-  .rust-player > :not(.rust-grid-hotbar) {
+  .rust-center,
+  .rust-right {
+    justify-content: center;
+  }
+  .rust-player-head {
+    margin-bottom: 1vh;
+  }
+  .rust-repair {
+    align-self: auto;
+    margin-bottom: 0;
+  }
+}
+.rust-repair {
+  width: 52vh;
+  display: flex;
+  flex-direction: column;
+  gap: 1vh;
+  margin-bottom: 14vh;
+  align-self: flex-start;
+
+  .ok {
+    color: $greenHi;
+  }
+  .bad {
+    color: $red;
+  }
+}
+.rust-repair-top {
+  display: flex;
+  gap: 1.6vh;
+  align-items: center;
+  background: $bg;
+  padding: 1.4vh;
+}
+// Ranura grande donde se suelta el objeto
+.rust-repair-slot {
+  position: relative;
+  flex: none;
+  width: 14vh;
+  height: 14vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  background: $slot center / 80% no-repeat;
+  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.35);
+
+  .count {
+    position: absolute;
+    right: 0.6vh;
+    bottom: 0.4vh;
+    font-size: 1.6vh;
+    text-shadow: 0 1px 2px #000;
+  }
+
+  span {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.8vh;
+    padding: 1vh;
+    color: $muted;
+    font-size: 1.4vh;
+    text-transform: uppercase;
+
+    .rust-icon {
+      width: 4.6vh;
+      height: 4.6vh;
+      opacity: 0.55;
+    }
+  }
+  &.over {
+    background-color: $slotHi;
+    box-shadow: inset 0 0 0 2px $greenHi;
+  }
+}
+.rust-repair-take {
+  align-self: flex-start;
+  display: flex;
+  align-items: center;
+  gap: 0.6vh;
+  margin-top: 0.6vh;
+  padding: 0.8vh 1.2vh;
+  border: none;
+  background: $panel;
+  color: $text;
+  font-size: 1.4vh;
+  font-weight: 700;
+  text-transform: uppercase;
+  cursor: pointer;
+  &:hover {
+    background: $panelHi;
+  }
+  &:active {
+    transform: none;
+  }
+}
+.rust-repair-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.6vh;
+
+  h3 {
+    margin: 0;
+    font-size: 2.6vh;
+    text-transform: uppercase;
+  }
+  small {
+    color: $muted;
+    font-size: 1.5vh;
+  }
+  .dur {
+    height: 0.8vh;
+    background: rgba(0, 0, 0, 0.4);
+    div {
+      height: 100%;
+      background: $greenHi;
+    }
+  }
+}
+.rust-repair-box {
+  background: $bg;
+  padding: 1.4vh;
+  display: flex;
+  flex-direction: column;
+  gap: 1vh;
+
+  .head {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    font-size: 2vh;
+    font-weight: 700;
+    text-transform: uppercase;
+    small {
+      font-size: 1.4vh;
+      text-transform: none;
+    }
+  }
+  .cost {
+    display: flex;
+    gap: 1.4vh;
+    font-size: 1.7vh;
+    font-weight: 700;
+  }
+}
+// Colores (skins) del arma
+.rust-skins {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 0.6vh;
+
+  // Lata de spray (SprayCan.tsx) de cada color sobre fondo gris como las ranuras
+  .swatch {
+    height: 12vh;
+    border: 2px solid transparent;
+    background: $slot;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0.6vh;
+    padding: 0.6vh 0;
+    cursor: pointer;
+
+    .rust-spray {
+      height: 8.4vh;
+      width: auto;
+    }
+    span {
+      color: #fff;
+      font-size: 1.2vh;
+      font-weight: 700;
+      text-transform: uppercase;
+      text-shadow: 0 1px 2px #000;
+    }
+    &:hover:not(:disabled) {
+      border-color: $text;
+    }
+    &.on {
+      border-color: $greenHi;
+      box-shadow: 0 0 0 1px $greenHi;
+    }
+    &:disabled:not(.on) {
+      opacity: 0.4;
+      cursor: default;
+    }
+    &:active {
+      transform: none;
+    }
+  }
+}
+
+// ---------- Árbol de desbloqueos (RustTree.tsx) ----------
+$treeLine: rgba(150, 165, 100, 0.8);
+$treeNode: 11vh;
+.rust-tree {
+  position: fixed;
+  inset: 0;
+  z-index: 20;
+  display: flex;
+  flex-direction: column;
+  gap: 1.4vh;
+  padding: 5vh 5vw;
+  box-sizing: border-box;
+  background: rgba(10, 10, 8, 0.82);
+  color: $text;
+  font-family: 'Roboto Condensed', Roboto, sans-serif;
+}
+.rust-tree-head {
+  display: flex;
+  align-items: center;
+  gap: 2vh;
+
+  h2 {
+    flex: 1;
+    margin: 0;
+    font-size: 3.2vh;
+    text-transform: uppercase;
+    display: flex;
+    align-items: center;
+    gap: 1vh;
+  }
+  .have {
+    padding: 0.8vh 1.4vh;
+    background: $panel;
+    font-size: 2vh;
+    font-weight: 700;
+  }
+  .close {
+    width: 5vh;
+    height: 5vh;
+    border: none;
+    background: $panel;
+    color: $text;
+    font-size: 2.4vh;
+    cursor: pointer;
+    &:hover {
+      background: rgba(192, 71, 47, 0.7);
+    }
+  }
+}
+.rust-tree-body {
+  flex: 1;
+  min-height: 0;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 36vh;
+  gap: 1.4vh;
+}
+.rust-tree-map {
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  gap: 5vh;
+  padding: 3vh;
+  background: $bg;
+  overflow: auto;
+}
+.rust-tree-branch {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  position: relative;
+}
+// Líneas: vertical desde el padre y horizontal que une a los hermanos
+.rust-tree-kids {
+  display: flex;
+  gap: 1.2vh;
+  padding-top: 2vh;
+  position: relative;
+
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 50%;
+    height: 2vh;
+    border-left: 2px solid $treeLine;
+  }
+  > .rust-tree-branch {
+    padding-top: 2vh;
+
+    &::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 50%;
+      height: 2vh;
+      border-left: 2px solid $treeLine;
+    }
+    &::after {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      border-top: 2px solid $treeLine;
+    }
+    &:first-child::after {
+      left: 50%;
+    }
+    &:last-child::after {
+      right: 50%;
+    }
+    &:only-child::after {
+      display: none;
+    }
+  }
+}
+.rust-tree-node {
+  position: relative;
+  width: $treeNode;
+  height: $treeNode;
+  background: rgba(20, 20, 18, 0.9) center / 75% no-repeat;
+  border: 2px solid rgba(120, 120, 112, 0.6);
+  cursor: pointer;
+
+  &.learned {
+    background-color: rgba(80, 92, 50, 0.85);
+    border-color: $treeLine;
+  }
+  &.available {
+    border-color: $text;
+  }
+  &.locked {
+    filter: grayscale(1) brightness(0.45);
+  }
+  &.sel {
+    box-shadow: 0 0 0 2px $accent;
+    border-color: $accent;
+  }
+  .lock {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 3vh;
+    color: #ddd;
+  }
+  .tag {
+    position: absolute;
+    right: 0.3vh;
+    bottom: 0.2vh;
+    font-size: 1.4vh;
+    font-weight: 700;
+    text-shadow: 0 1px 2px #000;
+    &.ok {
+      color: $greenHi;
+    }
+  }
+}
+.rust-tree-side {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1.2vh;
+  padding: 2vh;
+  background: $bg;
+  text-align: center;
+
+  .icon {
+    width: 14vh;
+    height: 14vh;
+    background: $slot center / 80% no-repeat;
+  }
+  h3 {
+    margin: 0;
+    font-size: 2.6vh;
+    text-transform: uppercase;
+  }
+  small {
+    color: $muted;
+    font-size: 1.6vh;
+    &.ok {
+      color: $greenHi;
+    }
+    &.bad {
+      color: $red;
+    }
+  }
+  .rust-craft-btn {
+    flex: none; // el botón base tiene flex: 1 y aquí se estiraba hasta llenar el panel
+    width: 100%;
+    margin-top: auto;
+    background: $green;
+    &:disabled {
+      background: #47463f;
+    }
+  }
+  .done {
+    color: $greenHi;
+    font-size: 2vh;
+    font-weight: 700;
+    text-transform: uppercase;
+  }
+}
+
+// ---------- Vista crafteo completa ----------
+// En la mesa de trabajo la pantalla de crafteo ocupa todo: inventario y ropa se ocultan del todo
+// (display: none; siguen montados, no pierden sus datos). Con visibility se colaban las barras de durabilidad
+.rust-root.view-craft {
+  .rust-left,
+  .rust-center {
     display: none;
   }
 }
 .rust-craft-screen {
   position: absolute;
-  top: 7.6vh;
+  top: 4vh;
   left: 5vw;
   right: 5vw;
-  bottom: 15vh;
+  bottom: 5vh; // ocupa toda la pantalla: el inventario no se ve en la mesa de trabajo
 }
 .rust-craft.full {
   height: 100%;

@@ -7,7 +7,8 @@ import { buyItem } from '../../thunks/buyItem';
 import { Items } from '../../store/items';
 import { canPurchaseItem, getItemUrl, isSlotWithItem } from '../../helpers';
 import { getRarity, rarityVar } from '../../helpers/rarity';
-import { HOTBAR_SLOTS, bagBase } from './PlayerInventory';
+import { bagBase } from './PlayerInventory';
+import { HOTBAR_SLOTS } from './constants';
 import type { SlotWithItem } from '../../typings';
 
 // Tienda estilo Rust: lista con "En venta", "Costo" y botón Comprar con cantidad

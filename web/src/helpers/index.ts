@@ -126,8 +126,6 @@ export const itemDurability = (metadata: any, curTime: number) => {
 export const getTotalWeight = (items: Inventory['items']) =>
   items.reduce((totalWeight, slot) => (isSlotWithItem(slot) ? totalWeight + slot.weight : totalWeight), 0);
 
-export const isContainer = (inventory: Inventory) => inventory.type === InventoryType.CONTAINER;
-
 export const getItemData = async (itemName: string) => {
   const resp: ItemData | null = await fetchNui('getItemData', itemName);
 

@@ -1,21 +1,21 @@
-import Icon from './Icon';
-import { faBoxOpen, faSuitcase } from '@fortawesome/free-solid-svg-icons';
 import React, { useState } from 'react';
 import useNuiEvent from '../../hooks/useNuiEvent';
-import { Items } from '../../store/items';
 import { useAppSelector } from '../../store';
 import { selectLeftInventory } from '../../store/inventory';
 import InventorySlot from '../inventory/InventorySlot';
 import { useDrop } from 'react-dnd';
 import { fetchNui } from '../../utils/fetchNui';
 import type { ClothDrag } from './RustClothing';
-import { playZipper } from './sounds';
 
-export const HOTBAR_SLOTS = 5;
+import { HOTBAR_SLOTS } from './constants';
 // Slot Mochila actual, para quien lo necesite fuera de este componente (p. ej. la tienda)
 export const bagBase = { current: 50 };
 
-const PlayerInventory: React.FC = () => {
+const PlayerInventory: React.FC<{
+  controls?: React.ReactNode;
+  below?: React.ReactNode;
+  aside?: React.ReactNode;
+}> = ({ controls, below, aside }) => {
   const inv = useAppSelector(selectLeftInventory);
   const isBusy = useAppSelector((state) => state.inventory.isBusy);
 
@@ -40,21 +40,10 @@ const PlayerInventory: React.FC = () => {
     bagBase.current = d.base;
   });
 
+  // Barra rápida (1-6) e inventario principal; la ranura Mochila va con la ropa y sus ranuras extra
+  // salen a la derecha, a la altura del inventario (RustBackpack, vía "aside")
   const hotbar = inv.items.filter((i) => i.slot <= HOTBAR_SLOTS);
   const main = inv.items.filter((i) => i.slot > HOTBAR_SLOTS && i.slot < base);
-  const bpSlot = inv.items.find((i) => i.slot === base);
-  const extra = inv.items.filter((i) => i.slot > base);
-  const bpLabel = bpSlot?.name ? bpSlot.metadata?.label || Items[bpSlot.name]?.label : null;
-  const used = extra.filter((i) => i.name).length;
-
-  // La mochila sale cerrada cada vez que abres el inventario; click la abre/cierra con sonido de zíper
-  const [bagOpen, setBagOpen] = useState(false);
-  useNuiEvent('setupInventory', () => setBagOpen(false));
-  const toggleBag = () => {
-    if (!extra.length) return;
-    playZipper(!bagOpen);
-    setBagOpen(!bagOpen);
-  };
 
   const slot = (item: (typeof inv.items)[number]) => (
     <InventorySlot
@@ -74,40 +63,25 @@ const PlayerInventory: React.FC = () => {
       className={`rust-player ${isOver ? 'cloth-over' : ''}`}
       style={{ pointerEvents: isBusy ? 'none' : 'auto' }}
     >
-      <div className="rust-section-title">
-        <span>Inventario</span>
-        {/* Sin peso: el límite son las ranuras */}
-        <small>
-          {main.filter((i) => i.name).length}/{main.length}
-        </small>
+      <div className="rust-inv-section">
+        <div className="rust-section-title rust-inv-title">
+          <span>Inventario</span>
+          {/* Cantidad / usar / dar / cerrar, en la misma línea, después de la palabra Inventario */}
+          {controls}
+          {/* Sin peso: el límite son las ranuras */}
+          <small>
+            {main.filter((i) => i.name).length}/{main.length}
+          </small>
+        </div>
+        <div className="rust-grid rust-grid-main">{main.map(slot)}</div>
+        {/* Panel derecho (mochila + crafteo rápido) anclado a la altura del inventario */}
+        {aside && <div className="rust-inv-aside">{aside}</div>}
       </div>
-      <div className="rust-grid rust-grid-main">{main.map(slot)}</div>
-
-      {extra.length > 0 && (
-        <>
-          <div className={`rust-bag-bar ${bagOpen ? 'open' : ''}`} onClick={toggleBag}>
-            <span>
-              <Icon icon={bagOpen ? faBoxOpen : faSuitcase} /> {bpLabel || 'Mochila'}
-            </span>
-            <small>
-              {used}/{extra.length} · {bagOpen ? 'click para cerrar' : 'click para abrir'}
-            </small>
-          </div>
-          {bagOpen && <div className="rust-grid rust-grid-backpack">{extra.map(slot)}</div>}
-        </>
-      )}
-
-      <div className="rust-section-title rust-hotbar-title">
-        <span>Barra rápida</span>
-        <small>Teclas 1 - {HOTBAR_SLOTS} · Mochila</small>
-      </div>
-      <div className="rust-grid rust-grid-hotbar">
+      {/* El suelo, debajo del inventario */}
+      {below}
+      {/* Barra rápida (la ranura Mochila va con la ropa) */}
+      <div className="rust-grid rust-grid-hotbar" title={`Teclas 1 - ${HOTBAR_SLOTS}`}>
         {hotbar.map(slot)}
-        {bpSlot && (
-          <div className={`rust-bp-slot ${bpSlot.name ? '' : 'empty'}`} onClick={toggleBag}>
-            {slot(bpSlot)}
-          </div>
-        )}
       </div>
     </div>
   );
