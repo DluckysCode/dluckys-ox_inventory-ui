@@ -25,14 +25,16 @@ import RustShop from '../rust/RustShop';
 import CraftSoundPlayer from '../rust/CraftSoundPlayer';
 import AdminPanel from '../rust/AdminPanel';
 import RustRepair from '../rust/RustRepair';
+import RustRecycler from '../rust/RustRecycler';
 import RustTree from '../rust/RustTree';
 import RustBackpack from '../rust/RustBackpack';
 
 const Inventory: React.FC = () => {
   const [inventoryVisible, setInventoryVisible] = useState(false);
   // Vista: inventario, pantalla completa de crafteo o mesa de reparación (se abre con ox_target)
-  const [view, setView] = useState<'inv' | 'craft' | 'repair'>('inv');
+  const [view, setView] = useState<'inv' | 'craft' | 'repair' | 'recycle'>('inv');
   useNuiEvent('rustRepairOpen', () => setView('repair'));
+  useNuiEvent('rustRecycleOpen', () => setView('recycle'));
   // Mesa de trabajo (ox_target -> Craftear): directo a la pantalla de crafteo
   useNuiEvent('rustCraftOpen', () => setView('craft'));
   const dispatch = useAppDispatch();
@@ -118,6 +120,7 @@ const Inventory: React.FC = () => {
               </div>
             )}
             {view === 'repair' && <RustRepair />}
+            {view === 'recycle' && <RustRecycler />}
           </div>
 
           {view === 'craft' && (

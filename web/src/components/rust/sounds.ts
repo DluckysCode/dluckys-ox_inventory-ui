@@ -1,4 +1,4 @@
-// Sonidos de la interfaz (archivos en ox_inventory/web/sounds/):
+// Sonido de la interfaz (archivo en ox_inventory/web/sounds/):
 // - mecanico.mp3: en bucle mientras hay algo crafteándose
 
 const VOLUME = 0.5; // 0.0 - 1.0

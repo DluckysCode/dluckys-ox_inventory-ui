@@ -1,13 +1,12 @@
 import { getRarity, rarityVar } from '../../helpers/rarity';
 import Icon from './Icon';
-import { faLock, faMinus, faPlus, faRecycle, faStar, faStopwatch, faWrench, faXmark } from '@fortawesome/free-solid-svg-icons';
+import { faLock, faMinus, faPlus, faStar, faStopwatch, faWrench, faXmark } from '@fortawesome/free-solid-svg-icons';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import useNuiEvent from '../../hooks/useNuiEvent';
 import { fetchNui } from '../../utils/fetchNui';
 import { getItemUrl, isSlotWithItem } from '../../helpers';
 import { useAppSelector } from '../../store';
 import { selectLeftInventory } from '../../store/inventory';
-import { Items } from '../../store/items';
 import { SlotWithItem } from '../../typings';
 
 type Mat = { name: string; label: string; amount: number };
@@ -30,7 +29,8 @@ type RawRecipe = {
 type Recipe = Omit<RawRecipe, 'ingredients'> & { ingredients: Ingredient[] };
 type Category = { id: string; label: string };
 type Job = { id: number; name: string; label: string; amount: number; time: number; startedAt?: number };
-type BenchState = { ids: Record<string, boolean>; level: number; repair: boolean; recycler: boolean };
+// Mesas cercanas (el crafteo solo usa el nivel y los tipos de mesa)
+type BenchState = { ids: Record<string, boolean>; level: number };
 
 const FAV_KEY = 'rustcraft:favs';
 const loadFavs = (): number[] => {
@@ -70,18 +70,15 @@ const RustCrafting: React.FC<{ visible: boolean; mode?: 'full' | 'quick' }> = ({
   const [queue, setQueue] = useState<Job[]>([]);
   const [offset, setOffset] = useState(0);
   const [, setTick] = useState(0);
-  const [bench, setBench] = useState<BenchState>({ ids: {}, level: 0, repair: false, recycler: false });
+  const [bench, setBench] = useState<BenchState>({ ids: {}, level: 0 });
   // false hasta que llegan las recetas: evita que el crafteo rápido muestre "no tienes materiales" un instante
   const [loaded, setLoaded] = useState(false);
-  const [recycleTable, setRecycleTable] = useState<Record<string, Mat[]>>({});
-  const [recycleQty, setRecycleQty] = useState<Record<string, number>>({});
 
   const load = useCallback(async () => {
     const data = await fetchNui<{
       categories: Category[];
       recipes: RawRecipe[];
       bench?: BenchState;
-      recycle?: Record<string, Mat[]>;
       error?: string;
     }>('rustcraftGetRecipes');
     if (!data || data.error) {
@@ -90,7 +87,6 @@ const RustCrafting: React.FC<{ visible: boolean; mode?: 'full' | 'quick' }> = ({
     }
     if (data.bench) setBench(data.bench);
     setLoaded(true);
-    setRecycleTable(data.recycle || {});
     setCategories(data.categories || []);
     setRawRecipes(data.recipes || []);
     setSel((prev) => prev ?? data.recipes?.[0]?.id ?? null);
@@ -103,11 +99,6 @@ const RustCrafting: React.FC<{ visible: boolean; mode?: 'full' | 'quick' }> = ({
 
   // Mesas cercanas en vivo (llegan cada vez que cambian)
   useNuiEvent<BenchState>('rustcraftBench', (state) => setBench(state));
-
-  // Si te alejas de la mesa, sal de las pestañas de reparar/reciclar
-  useEffect(() => {
-    if (cat === 'recycle' && !bench.recycler) setCat('favs');
-  }, [bench, cat]);
 
   // Los materiales se cuentan aquí con el inventario que ya tiene la interfaz
   const counts = useMemo(() => {
@@ -180,9 +171,6 @@ const RustCrafting: React.FC<{ visible: boolean; mode?: 'full' | 'quick' }> = ({
   };
   const craft = (id: number, amount: number) => run('rustcraftCraft', { id, amount });
   const cancel = (id: number) => fetchNui('rustcraftCancel', { id });
-
-  // ---------- Reciclar ----------
-  const recyclable = Object.keys(recycleTable).filter((name) => (counts[name] || 0) > 0);
 
   // Recetas por categoría (para el número al lado de cada categoría)
   const catCount = (id: string) =>
@@ -278,53 +266,9 @@ const RustCrafting: React.FC<{ visible: boolean; mode?: 'full' | 'quick' }> = ({
             <small>{catCount(c.id) || ''}</small>
           </button>
         ))}
-        {bench.recycler && (
-          <button className={`special ${cat === 'recycle' ? 'active' : ''}`} onClick={() => setCat('recycle')}>
-            <Icon icon={faRecycle} /> Reciclar
-          </button>
-        )}
       </div>
 
-      {cat === 'recycle' && (
-        <div className="rust-list">
-          {recyclable.length === 0 && <div className="rust-empty">No tienes nada que se pueda reciclar.</div>}
-          {recyclable.map((name) => {
-            const have = counts[name] || 0;
-            const n = Math.min(recycleQty[name] || 1, have);
-            return (
-              <div className="rust-row" key={name}>
-                <span className="ico" style={{ backgroundImage: img(name) }} />
-                <div className="info">
-                  <b>
-                    {Items[name]?.label || name} <small>(tienes {have})</small>
-                  </b>
-                  <small>
-                    Da:{' '}
-                    {recycleTable[name].map((o) => (
-                      <span key={o.name} className="ok">
-                        {o.amount * n} {o.label}{' '}
-                      </span>
-                    ))}
-                  </small>
-                </div>
-                <input
-                  className="rust-row-qty"
-                  value={n}
-                  onChange={(e) =>
-                    setRecycleQty({ ...recycleQty, [name]: Math.max(1, Math.min(have, parseInt(e.target.value) || 1)) })
-                  }
-                  onKeyDown={(e) => e.stopPropagation()}
-                />
-                <button onClick={() => setRecycleQty({ ...recycleQty, [name]: have })}>Todo</button>
-                <button onClick={() => run('rustcraftRecycle', { name, amount: n })}>Reciclar</button>
-              </div>
-            );
-          })}
-        </div>
-      )}
-
-      {cat !== 'recycle' && (
-        <>
+      <>
           <input
             className="rust-search"
             placeholder="Buscar..."
@@ -425,8 +369,7 @@ const RustCrafting: React.FC<{ visible: boolean; mode?: 'full' | 'quick' }> = ({
               )}
             </div>
           )}
-        </>
-      )}
+      </>
 
       {msg && <div className="rust-msg">{msg}</div>}
 

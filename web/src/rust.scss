@@ -593,13 +593,6 @@ $invHalf: calc((6 * #{$slotSize} + 5 * #{$gap}) / 2);
     transform: none;
   }
 }
-.rust-tabs button.special {
-  background: rgba(111, 143, 58, 0.45);
-  color: $text;
-  &.active {
-    background: $green;
-  }
-}
 .rust-list {
   display: flex;
   flex-direction: column;
@@ -668,16 +661,6 @@ $invHalf: calc((6 * #{$slotSize} + 5 * #{$gap}) / 2);
       transform: none;
     }
   }
-}
-.rust-row-qty {
-  width: 4.5vh;
-  border: none;
-  outline: none;
-  text-align: center;
-  padding: 0.7vh 0;
-  background: rgba(0, 0, 0, 0.35);
-  color: $text;
-  font-size: 1.3vh;
 }
 .rust-craft-all {
   width: 100%;
@@ -1355,9 +1338,10 @@ $invHalf: calc((6 * #{$slotSize} + 5 * #{$gap}) / 2);
   color: $text;
 }
 
-// ---------- Mesa de reparación y contenedores ----------
+// ---------- Mesa de reparación, reciclador y contenedores ----------
 // Sin panel de ropa: inventario y mesa (o contenedor) juntos, centrados en la pantalla
 .rust-root.view-repair,
+.rust-root.view-recycle,
 .rust-root.centered {
   display: flex;
   justify-content: center;
@@ -1559,6 +1543,98 @@ $invHalf: calc((6 * #{$slotSize} + 5 * #{$gap}) / 2);
     &:active {
       transform: none;
     }
+  }
+}
+
+// ---------- Reciclador (RustRecycler.tsx) ----------
+.rust-recycler {
+  width: calc(6 * #{$slotSize} + 5 * #{$gap} + 2.8vh);
+  display: flex;
+  flex-direction: column;
+  gap: 1vh;
+}
+.rust-rec-box {
+  background: $bg;
+  padding: 1.4vh;
+
+  .head {
+    margin-bottom: 0.8vh;
+    color: $muted;
+    font-size: 1.6vh;
+    font-weight: 700;
+    text-transform: uppercase;
+  }
+}
+.rust-rec-grid {
+  display: grid;
+  grid-template-columns: repeat(6, $slotSize);
+  grid-auto-rows: $slotSize;
+  gap: $gap;
+
+  &.over .rust-rec-slot {
+    box-shadow: inset 0 0 0 1px $greenHi;
+  }
+}
+.rust-rec-slot {
+  position: relative;
+  background: $slot center / 74% no-repeat;
+
+  &.full {
+    cursor: pointer;
+    &:hover {
+      background-color: $slotHi;
+    }
+  }
+  .n {
+    position: absolute;
+    right: 0.5vh;
+    bottom: 0.4vh;
+    font-size: 1.5vh;
+    font-weight: 700;
+    color: $muted;
+    text-shadow: 0 1px 2px #000;
+  }
+}
+.rust-rec-controls {
+  display: flex;
+  align-items: center;
+  gap: 1.6vh;
+
+  p {
+    margin: 0;
+    color: $text;
+    font-size: 1.6vh;
+    line-height: 1.35;
+  }
+}
+.rust-rec-power {
+  flex: none;
+  display: flex;
+  align-items: center;
+  gap: 1vh;
+  padding: 1.6vh 2.2vh;
+  border: none;
+  background: $green;
+  color: #e8f3c8;
+  font-size: 2.2vh;
+  font-weight: 700;
+  text-transform: uppercase;
+  cursor: pointer;
+
+  &:hover:not(:disabled) {
+    background: $greenHi;
+  }
+  &.on {
+    background: $red;
+    color: #fff;
+  }
+  &:disabled {
+    background: #47463f;
+    color: #8a877c;
+    cursor: default;
+  }
+  &:active {
+    transform: none;
   }
 }
 
