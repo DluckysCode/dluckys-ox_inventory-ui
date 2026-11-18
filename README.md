@@ -1,3 +1,10 @@
+> **Fork de Dluckys (rama `dluckys-rust`)** — código fuente de la interfaz rediseñada con estilo de supervivencia:
+> inventario por ranuras sin peso, ropa con el personaje, mochilas, crafteo por mesas con árbol de desbloqueos,
+> mesa de reparación con skins y reciclador. Los componentes nuevos están en `web/src/components/rust/` y los
+> estilos en `web/src/rust.scss`. El recurso listo para usar, con capturas e instalación, está en
+> [dluckys-ox_inventory](https://github.com/DluckysCode/dluckys-ox_inventory).
+> Basado en [ox_inventory](https://github.com/overextended/ox_inventory) (GPL-3.0); se mantienen LICENSE y NOTICE.md del original.
+
 <div align="center">
 
 # ox_inventory
